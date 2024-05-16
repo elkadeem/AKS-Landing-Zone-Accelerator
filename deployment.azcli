@@ -1,6 +1,6 @@
+# Deploy spoke network in hub subscription
 $deploymentName = 'dev-02-network-hub'
 $location = 'uksouth'
-$templateFile = '.\02-Network-Hub\main.bicep'
 $parametersFile = '.\02-Network-Hub\main.bicepparam'
 $subscriptionId = 'bdccbf09-3420-4294-bd61-735b286edbbd'
 
@@ -10,6 +10,17 @@ az deployment sub create `
 --parameters  $parametersFile `
 --subscription $subscriptionId
 
+# deploy spoke network in spoke subscription
+$deploymentName = 'dev-02-network-spoke'
+$location = 'uksouth'
+$parametersFile = '.\03-Network-LZ\main.bicepparam'
+$subscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
+
+az deployment sub create `
+--name $deploymentName `
+--location $location `
+--parameters  $parametersFile `
+--subscription $subscriptionId
 
 az deployment sub delete `
 --name $deploymentName `
