@@ -51,6 +51,9 @@ module vnetSpoke 'modules/vnet/vnet.bicep' = {
     subnets: vnetSpokeSubnets
     dhcpOptions: dhcpOptions
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 module nsgAKS 'modules/vnet/nsg.bicep' = {
@@ -61,6 +64,9 @@ module nsgAKS 'modules/vnet/nsg.bicep' = {
     location: location 
     secuirtyRules: []   
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 module routetable 'modules/vnet/routetable.bicep' = {
@@ -70,6 +76,9 @@ module routetable 'modules/vnet/routetable.bicep' = {
     rtName: rtAKSSubnetname
     location: location
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 module routetableroutes 'modules/vnet/routetableroutes.bicep' = {
@@ -79,7 +88,7 @@ module routetableroutes 'modules/vnet/routetableroutes.bicep' = {
     routeName: 'aks-to-internet'
     routeTableName: rtAKSSubnetname
     properties: {
-      nextHopType: 'VirtualApplicance'
+      nextHopType: 'VirtualAppliance'
       nextHopIpAddress: firewallIP
       addressPrefix: '0.0.0.0/0'
     }
@@ -142,7 +151,10 @@ module privatednsACRZone 'modules/vnet/privatednszone.bicep' = {
   scope: resourceGroup(rgName)
   params: {
     privateDNSZoneName: 'privatelink${environment().suffixes.acrLoginServer}'  
-  }  
+  }
+  dependsOn: [
+    rg
+  ]
 }
 
 module privatednsACRLink 'modules/vnet/privatednslink.bicep' = {
@@ -166,14 +178,17 @@ module privatednsvalutZone 'modules/vnet/privatednszone.bicep' = {
   scope: resourceGroup(rgName)
   params: {
     privateDNSZoneName: 'privatelink.vaultcore.azure.net'  
-  }  
+  }
+  dependsOn: [
+    rg
+  ]
 }
 
 module privatednsVaultLink 'modules/vnet/privatednslink.bicep' = {
   name: 'privatednsVaultLink'
   scope: resourceGroup(rgName)
   params: {
-    privateDNSZoneName: privatednsACRZone.outputs.privateDNSZoneName
+    privateDNSZoneName: privatednsvalutZone.outputs.privateDNSZoneName
     vnetName: vnethub.name
     vnetId: vnethub.id
   }
@@ -187,11 +202,14 @@ module privatednsVaultLink 'modules/vnet/privatednslink.bicep' = {
 // Private DNS Zone for Storage Account
 
 module privatednsStorageAccountZone 'modules/vnet/privatednszone.bicep' = {
-  name: 'privatednsvalutZone'
+  name: 'privatednsSAZone'
   scope: resourceGroup(rgName)
   params: {
     privateDNSZoneName: 'privatelink.file.${environment().suffixes.storage}'  
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 module privatednsStorageAccounttLink 'modules/vnet/privatednslink.bicep' = {
@@ -203,22 +221,25 @@ module privatednsStorageAccounttLink 'modules/vnet/privatednslink.bicep' = {
     vnetId: vnethub.id
   }
   dependsOn: [
-    privatednsvalutZone
+    privatednsStorageAccountZone
     vnethub
   ]
 }
 
 // Private DNS Zone for AKS
 module privatednsAKSZone 'modules/vnet/privatednszone.bicep' = {
-  name: 'privatednsvalutZone'
+  name: 'privatednsaksZone'
   scope: resourceGroup(rgName)
   params: {
     privateDNSZoneName: 'privatelink.${toLower(location)}${privateDNSZoneAKSSuffixes[environment().name]}'  
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 module privatednsAKSLink 'modules/vnet/privatednslink.bicep' = {
-  name: 'privatednsSALink'
+  name: 'privatednsAKSLink'
   scope: resourceGroup(rgName)
   params: {
     privateDNSZoneName: privatednsAKSZone.outputs.privateDNSZoneName
@@ -226,7 +247,7 @@ module privatednsAKSLink 'modules/vnet/privatednslink.bicep' = {
     vnetId: vnethub.id
   }
   dependsOn: [
-    privatednsvalutZone
+    privatednsAKSZone
     vnethub
   ]
 }
@@ -247,6 +268,9 @@ module publicipappgw 'modules/vnet/publicip.bicep' = {
       tier: 'Regional'
     }
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 resource appgwsubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
@@ -287,7 +311,7 @@ module nsgappgwsubnet 'modules/vnet/nsg.bicep' = {
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
           access: 'Allow'
-          priority: 102
+          priority: 101
           direction: 'Inbound'
         }
       }
@@ -345,6 +369,9 @@ module nsgappgwsubnet 'modules/vnet/nsg.bicep' = {
       }
     ]   
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 module appgwroutetable 'modules/vnet/routetable.bicep' = {

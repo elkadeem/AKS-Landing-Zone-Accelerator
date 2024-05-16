@@ -75,7 +75,7 @@ resource appgw 'Microsoft.Network/applicationGateways@2023-11-01' = {
           id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appgwname, frontendIPConfiugrationName)
         }
         frontendPort: {
-          id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', appgwname, frontendport)
+          id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', appgwname, frontendport)
         }
         protocol: 'Http'
       }
@@ -83,8 +83,9 @@ resource appgw 'Microsoft.Network/applicationGateways@2023-11-01' = {
   ]
   requestRoutingRules: [
     {
-      name: 'appGatewayRule'
+      name: 'appGatewayRule'    
       properties: {
+        priority: 100
         ruleType: 'Basic'
         httpListener: {
           id: resourceId('Microsoft.Network/applicationGateways/httpListeners', appgwname, httpListenerName)
