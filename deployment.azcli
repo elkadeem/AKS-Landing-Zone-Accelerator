@@ -35,6 +35,14 @@ az deployment sub create `
 --parameters  $parametersFile `
 --subscription $subscriptionId
 
+az group delete --name rg-aks-dev-uksouth-001 `
+--subscription 7c22d273-6ab6-4aa8-802e-e7a993cb2eae --yes --no-wait
+
+az group delete --name rg-spoke-dev-uksouth-01 `
+--subscription 7c22d273-6ab6-4aa8-802e-e7a993cb2eae --yes --no-wait
+
+az group delete --name rg-hub-dev-uksouth-01 `
+--subscription bdccbf09-3420-4294-bd61-735b286edbbd --yes --no-wait
 
 az deployment sub delete `
 --name $deploymentName `

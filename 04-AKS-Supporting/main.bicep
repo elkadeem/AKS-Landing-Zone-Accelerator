@@ -19,15 +19,13 @@ param privateDNSZoneKVName string = 'privatelink.vaultcore.azure.net'
 param privateDNSZoneSAName string = 'privatelink.file.${environment().suffixes.storage}'
 param aksIdentityName string = 'aksIdentity'
 
-
 module rg 'modules/resource-group/rg.bicep' = {
   name: rgName
   params: {
-  rgName: rgName
-  location: location
+    rgName: rgName
+    location: location
   }
 }
-
 
 module acr 'modules/acr/acr.bicep' = {
   scope: resourceGroup(rg.name)
@@ -37,8 +35,10 @@ module acr 'modules/acr/acr.bicep' = {
     acrName: acrName
     acrSkuName: 'Premium'
   }
+  dependsOn: [
+    rg
+  ]
 }
-
 
 module keyvault 'modules/keyvault/keyvault.bicep' = {
   scope: resourceGroup(rg.name)
@@ -49,8 +49,10 @@ module keyvault 'modules/keyvault/keyvault.bicep' = {
     name: keyvaultName
     tenantId: subscription().tenantId
   }
+  dependsOn: [
+    rg
+  ]
 }
-
 
 module storage 'modules/storage/storage.bicep' = {
   scope: resourceGroup(rg.name)
@@ -60,6 +62,9 @@ module storage 'modules/storage/storage.bicep' = {
     storageAccountName: storageAccountName
     storageAccountType: storageAccountType
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 resource servicesSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
@@ -75,17 +80,22 @@ module privateEndpointKeyVault 'modules/vnet/privateendpoint.bicep' = {
     privateLinkServiceConnections: [
       {
         name: '${keyVaultPrivateEndpointName}-conn'
-        privateLinkServiceId: keyvault.outputs.keyvaultId
-        groupIds: [
-          'Vault'
-        ]
+        properties: {
+          privateLinkServiceId: keyvault.outputs.keyvaultId
+          groupIds: [
+            'Vault'
+          ]
+        }
       }
     ]
     privateEndpointName: keyVaultPrivateEndpointName
     subnetid: servicesSubnet.id
   }
+  dependsOn: [
+    keyvault
+    servicesSubnet
+  ]
 }
-
 
 module privateEndpointAcr 'modules/vnet/privateendpoint.bicep' = {
   scope: resourceGroup(rg.name)
@@ -95,15 +105,21 @@ module privateEndpointAcr 'modules/vnet/privateendpoint.bicep' = {
     privateLinkServiceConnections: [
       {
         name: '${acrPrivateEndpointName}-conn'
-        privateLinkServiceId: keyvault.outputs.keyvaultId
-        groupIds: [
-          'registry'
-        ]
+        properties: {
+          privateLinkServiceId: acr.outputs.acrid
+          groupIds: [
+            'registry'
+          ]
+        }
       }
     ]
     privateEndpointName: acrPrivateEndpointName
     subnetid: servicesSubnet.id
   }
+  dependsOn: [
+    acr
+    servicesSubnet
+  ]
 }
 
 module privateEndpointSA 'modules/vnet/privateendpoint.bicep' = {
@@ -114,15 +130,21 @@ module privateEndpointSA 'modules/vnet/privateendpoint.bicep' = {
     privateLinkServiceConnections: [
       {
         name: '${saPrivateEndpointName}-conn'
-        privateLinkServiceId: storage.outputs.storageAccountId
-        groupIds: [
-          'file'
-        ]
+        properties: {
+          privateLinkServiceId: storage.outputs.storageAccountId
+          groupIds: [
+            'file'
+          ]
+        }
       }
     ]
     privateEndpointName: saPrivateEndpointName
     subnetid: servicesSubnet.id
   }
+  dependsOn: [
+    storage
+    servicesSubnet
+  ]
 }
 
 resource privateDNSZoneACR 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
@@ -137,6 +159,10 @@ module privateEndpointACRDNSSetting 'modules/vnet/privatednszonegroups.bicep' = 
     privateDNSZoneId: privateDNSZoneACR.id
     privateEndpointName: privateEndpointAcr.name
   }
+  dependsOn: [
+    privateDNSZoneACR
+    privateEndpointAcr
+  ]
 }
 
 resource privateDNSZoneKV 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
@@ -151,8 +177,11 @@ module privateEndpointKVDNSSetting 'modules/vnet/privatednszonegroups.bicep' = {
     privateDNSZoneId: privateDNSZoneKV.id
     privateEndpointName: privateEndpointKeyVault.name
   }
+  dependsOn: [
+    privateDNSZoneKV
+    privateEndpointKeyVault
+  ]
 }
-
 
 resource privateDNSZoneSA 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
   scope: resourceGroup(privatednszonesSubscriptionId, privatednszonesRGName)
@@ -166,6 +195,10 @@ module privateEndpointSADNSSetting 'modules/vnet/privatednszonegroups.bicep' = {
     privateDNSZoneId: privateDNSZoneSA.id
     privateEndpointName: privateEndpointSA.name
   }
+  dependsOn: [
+    privateDNSZoneSA
+    privateEndpointSA
+  ]
 }
 
 module aksIdentity 'modules//identity/userassignidentity.bicep' = {
@@ -175,6 +208,9 @@ module aksIdentity 'modules//identity/userassignidentity.bicep' = {
     location: location
     identityName: aksIdentityName
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 output acrName string = acr.name
