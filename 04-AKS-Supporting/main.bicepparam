@@ -1,0 +1,18 @@
+using './main.bicep'
+
+param rgName = 'rg-aks-dev-uksouth-001'
+param location = 'uksouth'
+param acrName = 'welkacraksdev001'
+param keyvaultName = 'kv-aks-dev-uksouth-001'
+param storageAccountName = 'welstaksdev001'
+param storageAccountType = 'Standard_LRS'
+param rgSpokevnetName = 'rg-spoke-dev-uksouth-01'
+param vnetSpokeName = 'vnet-spoke-dev-uksouth-01'
+param serviceepSubnetName = 'servicespe'
+param keyVaultPrivateEndpointName = 'keyvault-pvt-ep'
+param acrPrivateEndpointName = 'acr-pvt-ep'
+param saPrivateEndpointName = 'sa-pvt-ep'
+param privatednszonesSubscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
+param privatednszonesRGName = 'rg-spoke-dev-uksouth-01'
+param aksIdentityName = 'aksdevIdentity'
+

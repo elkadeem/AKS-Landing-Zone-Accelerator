@@ -12,6 +12,13 @@ param serviceepSubnetName string
 param keyVaultPrivateEndpointName string
 param acrPrivateEndpointName string
 param saPrivateEndpointName string
+param privatednszonesSubscriptionId string = subscription().subscriptionId
+param privatednszonesRGName string = rgName
+param privateDNSZoneACRName string = 'privatelink${environment().suffixes.acrLoginServer}'
+param privateDNSZoneKVName string = 'privatelink.vaultcore.azure.net'
+param privateDNSZoneSAName string = 'privatelink.file.${environment().suffixes.storage}'
+param aksIdentityName string = 'aksIdentity'
+
 
 module rg 'modules/resource-group/rg.bicep' = {
   name: rgName
@@ -117,3 +124,58 @@ module privateEndpointSA 'modules/vnet/privateendpoint.bicep' = {
     subnetid: servicesSubnet.id
   }
 }
+
+resource privateDNSZoneACR 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  scope: resourceGroup(privatednszonesSubscriptionId, privatednszonesRGName)
+  name: privateDNSZoneACRName
+}
+
+module privateEndpointACRDNSSetting 'modules/vnet/privatednszonegroups.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'acr-pvtep-dns'
+  params: {
+    privateDNSZoneId: privateDNSZoneACR.id
+    privateEndpointName: privateEndpointAcr.name
+  }
+}
+
+resource privateDNSZoneKV 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  scope: resourceGroup(privatednszonesSubscriptionId, privatednszonesRGName)
+  name: privateDNSZoneKVName
+}
+
+module privateEndpointKVDNSSetting 'modules/vnet/privatednszonegroups.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'kv-pvtep-dns'
+  params: {
+    privateDNSZoneId: privateDNSZoneKV.id
+    privateEndpointName: privateEndpointKeyVault.name
+  }
+}
+
+
+resource privateDNSZoneSA 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  scope: resourceGroup(privatednszonesSubscriptionId, privatednszonesRGName)
+  name: privateDNSZoneSAName
+}
+
+module privateEndpointSADNSSetting 'modules/vnet/privatednszonegroups.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'sa-pvtep-dns'
+  params: {
+    privateDNSZoneId: privateDNSZoneSA.id
+    privateEndpointName: privateEndpointSA.name
+  }
+}
+
+module aksIdentity 'modules//identity/userassignidentity.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: aksIdentityName
+  params: {
+    location: location
+    identityName: aksIdentityName
+  }
+}
+
+output acrName string = acr.name
+output keyvaultName string = keyvault.name
