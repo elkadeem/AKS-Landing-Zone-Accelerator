@@ -27,6 +27,7 @@ steps:
       az bicep version
 
 - task: AzureCLI@2
+  displayName: 'Create Hub network resources'
   inputs:
     azureSubscription: 'azdemoconnection'
     scriptType: 'pscore'
@@ -35,3 +36,36 @@ steps:
       az deployment sub create --name '$(enviornmentName)-02-network-hub' --location $(azureregion) `
       --parameters  './02-Network-Hub/main.bicepparam' `
       --parameters rgName=$(hubNetworkResourceGroup)
+
+- task: AzureCLI@2
+  displayName: 'Update UDR for Hub network resources'
+  inputs:
+    azureSubscription: 'azdemoconnection'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment sub create --name '$(enviornmentName)-02-network-hub-updateUDR' --location $(azureregion) `
+      --parameters  './02-Network-Hub/updateUDR.bicepparam' `
+      --parameters rgName=$(hubNetworkResourceGroup)
+
+- task: AzureCLI@2
+  displayName: 'Create AKS spoke network resources'
+  inputs:
+    azureSubscription: 'azdemoconnection'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment sub create --name '$(enviornmentName)--03-network-spoke' --location $(azureregion) `
+      --parameters  './03-Network-LZ/main.bicepparam' `
+      --parameters rgName=$(SpokeNetworkResourceGroup) hubSubscriptionId=$(HubSubscriptionId)
+
+- task: AzureCLI@2
+  displayName: 'Update UDR and NSG for spoke network resources'
+  inputs:
+    azureSubscription: 'azdemoconnection'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment sub create --name '$(enviornmentName)--03-network-spoke' --location $(azureregion) `
+      --parameters  './03-Network-LZ/updateUDR-NSG.bicepparam' `
+      --parameters rgName=$(SpokeNetworkResourceGroup)
