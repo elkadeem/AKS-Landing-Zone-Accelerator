@@ -33,5 +33,5 @@ steps:
     scriptLocation: 'inlineScript'
     inlineScript: |
       az deployment sub create --name '$(enviornmentName)-02-network-hub' --location $(azureregion) `
-      --parameters  '.\02-Network-Hub\main.bicepparam' `
+      --parameters  './02-Network-Hub/main.bicepparam' `
       --parameters rgName=$(hubNetworkResourceGroup)
