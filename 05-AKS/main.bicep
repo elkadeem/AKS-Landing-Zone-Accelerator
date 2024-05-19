@@ -107,6 +107,7 @@ module aks 'modules/aks/privateaks.bicep' = {
     autoScalingProfile: autoScalingProfile
     enableAutoScaling: enableAutoScaling
     availabilityZones: availabilityZones
+    aksInfrastractureRGName: aksInfrastractureRGName
     location: location
     aksadminGroupObjectIDs: [
       aksadminGroupaccessprincipalId
@@ -253,4 +254,4 @@ module appgwroutetableroutes 'modules/vnet/routetableroutes.bicep' = [for i in r
     routeName: 'aks-vmss-appgw-pod-node-${i}'
     routetableName: rtAppGW.name
   }
-}
+}]
