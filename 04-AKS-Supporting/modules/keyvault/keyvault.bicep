@@ -2,6 +2,7 @@ param name string
 param keyVaultsku string
 param tenantId string
 param location string = resourceGroup().location
+param enablePurgeProtection bool = false
 
 resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: name
@@ -15,7 +16,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     tenantId: tenantId
     enabledForDiskEncryption: true
     softDeleteRetentionInDays: 7
-    enablePurgeProtection: true
+    enablePurgeProtection: enablePurgeProtection? true : null
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Deny'

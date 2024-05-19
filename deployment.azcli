@@ -35,6 +35,9 @@ az deployment sub create `
 --parameters  $parametersFile `
 --subscription $subscriptionId
 
+
+# Delete all resources
+
 az group delete --name rg-aks-dev-uksouth-001 `
 --subscription 7c22d273-6ab6-4aa8-802e-e7a993cb2eae --yes --no-wait
 
@@ -43,6 +46,12 @@ az group delete --name rg-spoke-dev-uksouth-01 `
 
 az group delete --name rg-hub-dev-uksouth-01 `
 --subscription bdccbf09-3420-4294-bd61-735b286edbbd --yes --no-wait
+
+az keyvault list-deleted --subscription 7c22d273-6ab6-4aa8-802e-e7a993cb2eae --resource-type vault
+az keyvault update --subscription 7c22d273-6ab6-4aa8-802e-e7a993cb2eae -g rg-aks-dev-uksouth-001 -n kv-aks-dev-uksouth-001 --enable-purge-protection true
+az keyvault recover --subscription 7c22d273-6ab6-4aa8-802e-e7a993cb2eae -n kv-aks-dev-uksouth-001
+az keyvault purge --name kv-aks-dev-uksouth-001 --location uksouth --subscription 7c22d273-6ab6-4aa8-802e-e7a993cb2eae
+
 
 az deployment sub delete `
 --name $deploymentName `
