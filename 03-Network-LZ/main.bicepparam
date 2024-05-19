@@ -37,7 +37,7 @@ param vnetSpokeSubnets = [
   }
 ]
 param dhcpOptions = {
-  dnsServers: ['10.0.1.4'] // firewall private IP address if it is DNS server
+  // dnsServers: ['10.0.1.4'] // firewall private IP address if it is DNS server
 }
 param nsgAKSName = 'nsg-aks-dev-uksouth-01'
 param rtAKSSubnetname = 'rt-aks-dev-uksouth-01'
