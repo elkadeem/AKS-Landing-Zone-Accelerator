@@ -10,6 +10,7 @@ param enableAzurePolicy bool = true
 param enableOMSAgent bool = true
 param logAnalyticsWorkspaceResourceID string
 param applicationGatewayResourceId string
+param enableIngressApplicationGateway bool = true
 
 resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
   name: aksName
@@ -33,15 +34,20 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
       omsagent: {
         enabled: enableOMSAgent
         config: {
-           logAnalyticsWorkspaceResourceID: enableOMSAgent? logAnalyticsWorkspaceResourceID : null        
+          logAnalyticsWorkspaceResourceID: enableOMSAgent ? logAnalyticsWorkspaceResourceID : null
         }
       }
-      ingressApplicationGateway: {
-        enabled: false
-        config: {
-          applicationGatewayId: applicationGatewayResourceId
-          effectiveApplicationGatewayId: applicationGatewayResourceId
-      }     
-    }   
+      ingressApplicationGateway: enableIngressApplicationGateway
+        ? {
+            enabled: false
+            config: {
+              applicationGatewayId: applicationGatewayResourceId
+              effectiveApplicationGatewayId: applicationGatewayResourceId
+            }
+          }
+        : {
+            enabled: false
+          }
+    }
   }
 }
