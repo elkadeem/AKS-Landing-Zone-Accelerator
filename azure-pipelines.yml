@@ -80,3 +80,14 @@ steps:
       az deployment sub create --name '$(enviornmentName)-04-aks-supporting' --location $(azureregion) `
       --parameters  './04-AKS-Supporting/main.bicepparam' `
       --parameters rgName=$(AKSResourceGroup) rgSpokevnetName=$(SpokeNetworkResourceGroup) storageAccountName=$(mesacrdev001) privatednszonesSubscriptionId=$(PrivateDNSSubscriptionId) acrName=$(ACRName)
+
+- task: AzureCLI@2
+  displayName: 'Create AKS service'
+  inputs:
+    azureSubscription: 'azdemoconnection'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment sub create --name '$(enviornmentName)-05-aks-deployment' --location $(azureregion) `
+      --parameters  './05-AKS/main.bicepparam' `
+      --parameters rgName=$(AKSResourceGroup) privateDNSZoneAKSNameResourceGroup=$(SpokeNetworkResourceGroup) vnetspokeRGName=$(SpokeNetworkResourceGroup) aksadminGroupaccessprincipalId=$(AdminsGroupId) aksusersgroupaccessprincipalId=$(UsersGroupId)  privateDNSZoneAKSNameSubscriptionId=$(PrivateDNSSubscriptionId) acrName=$(ACRName)
