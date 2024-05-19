@@ -18,6 +18,7 @@ param enableAutoScaling bool = false
 param aksSubnetId string
 param aksPrivateDNSZone string
 param enableWorkloadIdentity bool = true
+param aksInfrastractureRGName string
 
 param autoScalingProfile object
 @allowed([
@@ -36,7 +37,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
   sku: aksSKU
   properties: {
     kubernetesVersion: kubernetesVersion
-    nodeResourceGroup: 'rg-${aksName}-${toLower(location)}-aksInfra'
+    nodeResourceGroup: aksInfrastractureRGName
     dnsPrefix: '${toLower(aksName)}aks'
     autoScalerProfile: enableAutoScaling? autoScalingProfile : null
     aadProfile: {
@@ -76,7 +77,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
             enabled: true
             config: {
               applicationGatewayId: applicationGatewayResourceId
-              effectiveApplicationGatewayId: applicationGatewayResourceId
+              effectiveApplicationGatewayId: applicationGatewayResourceId                    
             }
           }
         : {
