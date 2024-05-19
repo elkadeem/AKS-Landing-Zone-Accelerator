@@ -18,4 +18,4 @@ steps:
     inlineScript: |
       az upgrade
       az bicep upgrade
-      az bicep --version
+      az bicep version
