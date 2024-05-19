@@ -9,8 +9,14 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  - group: Dev-Environment-Variables-Group
+  - name: enviornmentName
+    value: dev
+
 steps:
 - task: AzureCLI@2
+  displayName: 'Update Azure CLI and Bicep'
   inputs:
     azureSubscription: 'azdemoconnection'
     scriptType: 'pscore'
@@ -19,3 +25,13 @@ steps:
       az upgrade
       az bicep upgrade
       az bicep version
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'azdemoconnection'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment sub create --name '$(enviornmentName)-02-network-hub' --location $(azureregion) `
+      --parameters  '.\02-Network-Hub\main.bicepparam' `
+      --parameters rgName=$(hubNetworkResourceGroup)
