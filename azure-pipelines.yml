@@ -55,7 +55,7 @@ steps:
     scriptType: 'pscore'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      az deployment sub create --name '$(enviornmentName)--03-network-spoke' --location $(azureregion) `
+      az deployment sub create --name '$(enviornmentName)-03-network-spoke' --location $(azureregion) `
       --parameters  './03-Network-LZ/main.bicepparam' `
       --parameters rgName=$(SpokeNetworkResourceGroup) hubSubscriptionId=$(HubSubscriptionId)
 
@@ -66,6 +66,17 @@ steps:
     scriptType: 'pscore'
     scriptLocation: 'inlineScript'
     inlineScript: |
-      az deployment sub create --name '$(enviornmentName)--03-network-spoke' --location $(azureregion) `
+      az deployment sub create --name '$(enviornmentName)-network-spoke-updateUDR' --location $(azureregion) `
       --parameters  './03-Network-LZ/updateUDR-NSG.bicepparam' `
       --parameters rgName=$(SpokeNetworkResourceGroup)
+
+- task: AzureCLI@2
+  displayName: 'Create AKS supporting service'
+  inputs:
+    azureSubscription: 'azdemoconnection'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      az deployment sub create --name '$(enviornmentName)-04-aks-supporting' --location $(azureregion) `
+      --parameters  './04-AKS-Supporting/main.bicepparam' `
+      --parameters rgName=$(AKSResourceGroup) rgSpokevnetName=$(SpokeNetworkResourceGroup) storageAccountName=$(mesacrdev001) privatednszonesSubscriptionId=$(PrivateDNSSubscriptionId) acrName=$(ACRName)
