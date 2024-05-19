@@ -171,7 +171,7 @@ module bastion 'modules/vm/bastion.bicep' = {
   ]
 }
 
-module routetable 'modules//vnet/routetable.bicep' = {
+module routetable 'modules/vnet/routetable.bicep' = {
   scope: resourceGroup(rg.name)
   name: rtVMSubnetname
   params: {

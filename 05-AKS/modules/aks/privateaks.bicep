@@ -3,7 +3,7 @@ param kubernetesVersion string
 param location string = resourceGroup().location
 param aksIdentity object
 param aksSKU object = {
-  name: 'Basic'
+  name: 'Base'
   tier: 'Free'
 }
 param aksadminGroupObjectIDs array

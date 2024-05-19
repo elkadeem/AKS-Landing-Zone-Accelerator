@@ -17,7 +17,7 @@ param rtaksName string
 param aksClusterName string
 param kubernetesVersion string
 param aksSKU object = {
-  name: 'Basic'
+  name: 'Base'
   tier: 'Free'
 }
 param aksadminGroupaccessprincipalId string
@@ -45,6 +45,15 @@ var ipdelimiters = [
   '/'
 ]
 
+var privateDNSZoneAKSSuffixes = {
+  AzureCloud: '.azmk8s.io'
+  AzureUSGovernment: '.cx.aks.containerservice.azure.us'
+  AzureChinaCloud: '.cx.prod.service.azk8s.cn'
+  AzureGermanCloud: '' //TODO: what is the correct value here?
+}
+
+var aksprivateDNSZone = !empty(privateDNSZoneAKSName)? privateDNSZoneAKSName : 'privatelink.${toLower(location)}${privateDNSZoneAKSSuffixes[environment().name]}'
+
 module rg 'modules/resource-group/rg.bicep' = {
   name: rgName
   params: {
@@ -70,7 +79,7 @@ module aksPodIdentityRole 'modules/Identity/role.bicep' = {
 
 resource privatednsAKSZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
   scope: resourceGroup(privateDNSZoneAKSNameSubscriptionId, privateDNSZoneAKSNameResourceGroup)
-  name: privateDNSZoneAKSName
+  name: aksprivateDNSZone
 }
 
 module aksPolicy 'modules/policy/policy.bicep' = {
@@ -148,6 +157,9 @@ module aksRouteTableRole 'modules/Identity/rtrole.bicep' = {
     roleGuid: '4d97b98b-1d4f-4787-a291-c67834d212e7' //Network Contributor
     rtName: rtaksName
   }
+  dependsOn: [
+    aksIdentity
+  ]
 }
 
 module acraksaccess 'modules/Identity/acrrole.bicep' = {
@@ -158,6 +170,9 @@ module acraksaccess 'modules/Identity/acrrole.bicep' = {
     roleGuid: '7f951dda-4ed3-4680-a7ca-43fe172d538d' //AcrPull
     acrName: acrName
   }
+  dependsOn: [
+    aksIdentity
+  ]
 }
 
 module akspvtNetworkContributor 'modules/Identity/networkcontributorrole.bicep' = {
@@ -168,6 +183,9 @@ module akspvtNetworkContributor 'modules/Identity/networkcontributorrole.bicep' 
     roleGuid: '4d97b98b-1d4f-4787-a291-c67834d212e7' //Network Contributor
     vnetName: aksvnetName
   }
+  dependsOn: [
+    aksIdentity
+  ]
 }
 
 
@@ -176,9 +194,13 @@ module aksPvtDNSContributor 'modules/Identity/pvtdnscontribrole.bicep' = {
   name: 'aksPvtDNSContributor'
   params: {
     principalId: aksIdentity.properties.principalId
-    roleGuid: 'b1bea1f4-2d4c-4e5f-bb5b-864c3d0fa1d1' //Private DNS Zone Contributor
+    roleGuid: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f' //Private DNS Zone Contributor
     pvtdnsAKSZoneName: privatednsAKSZone.name
   }
+  dependsOn: [
+    aksIdentity
+    privatednsAKSZone
+  ]
 }
 
 module vmContributorRole 'modules/Identity/role.bicep' = {
@@ -188,6 +210,9 @@ module vmContributorRole 'modules/Identity/role.bicep' = {
     principalId: aksIdentity.properties.principalId
     roleGuid: '9980e02c-c2be-4d73-94e8-173b1dc7cf3c' //Virtual Machine Contributor
   }
+  dependsOn: [
+    aks
+  ]
 }
 
 module aksuseraccess 'modules/Identity/role.bicep' = {
@@ -197,8 +222,10 @@ module aksuseraccess 'modules/Identity/role.bicep' = {
     principalId: aksusersgroupaccessprincipalId
     roleGuid: '4abbcc35-e782-43d8-92c5-2d3f1bd2253f' //Azure Kubernetes Service Cluster User Role
   }
+  dependsOn: [
+    rg
+  ]  
 }
-
 
 module aksadminaccess 'modules/Identity/role.bicep' = {
   scope: resourceGroup(rg.name)
@@ -207,6 +234,9 @@ module aksadminaccess 'modules/Identity/role.bicep' = {
     principalId: aksadminGroupaccessprincipalId
     roleGuid: '0ab0b1a8-8aac-4efd-b8c2-3ee1fb270be8' //Azure Kubernetes Service Cluster Admin Role
   }
+  dependsOn: [
+    rg
+  ]
 }
 
 module appGatewayContributorRole 'modules/Identity/role.bicep' = {
@@ -216,6 +246,9 @@ module appGatewayContributorRole 'modules/Identity/role.bicep' = {
     principalId: aks.outputs.ingressIdentity
     roleGuid: 'b24988ac-6180-42a0-ab88-20f7382dd24c' //Application Gateway Contributor
   }
+  dependsOn: [
+    aks
+  ]
 }
 
 module appGatewayReaderRole 'modules/Identity/role.bicep' = {
@@ -225,6 +258,9 @@ module appGatewayReaderRole 'modules/Identity/role.bicep' = {
     principalId: aks.outputs.ingressIdentity
     roleGuid: 'acdd72a7-3385-48ef-bd42-f606fba81ae7' //Reader
   }
+  dependsOn: [
+    aks
+  ]
 }
 
 module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
@@ -235,6 +271,9 @@ module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
     vaultName: keyvaultName
     keyvaultManagedIdentityObjectId: aksusersgroupaccessprincipalId
   }
+  dependsOn: [
+    aks
+  ]
 }
 
 resource rtAppGW  'Microsoft.Network/routeTables@2023-11-01' existing = {

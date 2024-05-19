@@ -36,6 +36,32 @@ az deployment sub create `
 --subscription $subscriptionId
 
 
+# deploy aks supporting resources spoke subscription
+az provider register --namespace Microsoft.ContainerService
+az provider register --namespace Microsoft.OperationsManagement
+az provider register --namespace Microsoft.OperationalInsights
+az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
+az feature register --namespace Microsoft.Compute --name EncryptionAtHost
+
+az provider show --namespace Microsoft.ContainerService
+az provider show --namespace Microsoft.OperationsManagement
+az provider show --namespace Microsoft.OperationalInsights
+az feature show --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
+az feature show --namespace Microsoft.Compute --name EncryptionAtHost
+
+
+$deploymentName = 'dev-02-aks-deployment'
+$location = 'uksouth'
+$parametersFile = '.\05-AKS\main.bicepparam'
+$subscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
+
+az deployment sub create `
+--name $deploymentName `
+--location $location `
+--parameters  $parametersFile `
+--subscription $subscriptionId
+
+
 # Delete all resources
 
 az group delete --name rg-aks-dev-uksouth-001 `
