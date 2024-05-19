@@ -96,6 +96,29 @@ param fwApplicationRuleCollections = [
             '*.cdn.mscr.io'
             '*.opinsights.azure.com'
             '*.monitoring.azure.com'
+            'management.azure.com'
+            'login.microsoftonline.com'
+            'packages.microsoft.com'
+            'acs-mirror.azureedge.net'
+            'security.ubuntu.com'
+            'azure.archive.ubuntu.com'
+            'changelogs.ubuntu.com'
+            'nvidia.github.io'
+            'us.download.nvidia.com'
+            'download.docker.com'
+            'onegetcdn.azureedge.net'
+            'go.microsoft.com'
+            '*.mp.microsoft.com'
+            'www.msftconnecttest.com'
+            'ctldl.windowsupdate.com'
+            'vault.azure.net'
+            'dc.services.visualstudio.com'
+            'data.policy.core.windows.net'
+            'store.policy.core.windows.net'
+            '*.dp.kubernetesconfiguration.azure.com'
+            '*.ingestion.msftcloudes.com'
+            '*.microsoftmetrics.com'
+            'marketplaceapi.microsoft.com'
           ]
         }
         {
@@ -108,6 +131,8 @@ param fwApplicationRuleCollections = [
           ]
           sourceAddresses: ['10.1.1.0/24']
           targetFqdns: [
+            'mcr.microsoft.com'
+            '*.data.mcr.microsoft.com'
             '*.azurecr.io'
             '*.gcr.io'
             '*.docker.io'
@@ -187,7 +212,7 @@ param fwNetworkRuleCollections = [
           sourceAddresses: ['10.1.1.0/24']
           destinationAddresses: ['*']
           destinationPorts: ['1194']
-        }
+        }        
       ]
     }
   }

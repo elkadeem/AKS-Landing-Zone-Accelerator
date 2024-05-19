@@ -21,6 +21,9 @@ resource firewall 'Microsoft.Network/azureFirewalls@2023-11-01' = {
     applicationRuleCollections: fwapplicationRuleCollections
     networkRuleCollections: fwnetworkRuleCollections
     natRuleCollections: fwnatRuleCollections
+    additionalProperties: {
+      'Network.DNS.EnableProxy': 'True'
+    }
   }
 }
 

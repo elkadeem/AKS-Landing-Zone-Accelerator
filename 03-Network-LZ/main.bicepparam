@@ -53,6 +53,6 @@ param appgwAutoScale = {
   minCapacity: 1
   maxCapacity: 2
 }
-param nsgappgwName = 'ngs-agw-dev-uksouth-01'
+param nsgappgwName = 'nsg-agw-dev-uksouth-01'
 param appgwroutetableName = 'rt-agw-dev-uksouth-01'
 

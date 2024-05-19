@@ -381,4 +381,7 @@ module appgwroutetable 'modules/vnet/routetable.bicep' = {
     rtName: appgwroutetableName
     location: location
   }
+  dependsOn: [
+    rg
+  ]
 }

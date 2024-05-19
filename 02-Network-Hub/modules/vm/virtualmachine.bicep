@@ -12,9 +12,6 @@ param imageReference object = {
   sku: '2019-Datacenter'
   version: 'latest'
 }
-param windowsConfiguration object = {}
-param linuxConfiguration object = {}
-
 module vmnic '../vnet/nic.bicep' = {
   name: '${vmname}-nic'
   params: {
@@ -43,9 +40,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-03-01' = {
     osProfile: {
       computerName: vmname
       adminUsername: adminUsername
-      adminPassword: adminPassword
-      windowsConfiguration: windowsConfiguration
-      linuxConfiguration: linuxConfiguration
+      adminPassword: adminPassword            
     }
     networkProfile: {
       networkInterfaces: [

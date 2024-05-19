@@ -27,8 +27,25 @@ param enableIngressApplicationGateway = true
 param availabilityZones = []
 param enableAutoScaling = true
 param enableWorkloadIdentity = true
-param autoScalingProfile = {}
+param autoScalingProfile = {
+  'balance-similar-node-groups': 'false'
+  expander: 'random'
+  'max-empty-bulk-delete': '10'
+  'max-graceful-termination-sec': '600'
+  'max-node-provision-time': '15m'
+  'max-total-unready-percentage': '45'
+  'new-pod-scale-up-delay': '0s'
+  'ok-total-unready-count': '3'
+  'scale-down-delay-after-add': '10m'
+  'scale-down-delay-after-delete': '10s'
+  'scale-down-delay-after-failure': '3m'
+  'scale-down-unneeded-time': '10m'
+  'scale-down-unready-time': '20m'
+  'scale-down-utilization-threshold': '0.5'
+  'scan-interval': '10s'
+  'skip-nodes-with-local-storage': 'false'
+  'skip-nodes-with-system-pods': 'true'
+}
 param networkPlugin = 'azure'
 param acrName = 'welkacraksdev001'
-param keyvaultName = 'kv-aks-dev-uksouth-002'
-
+param keyvaultName = 'kv-aks-dev-uksouth-003'

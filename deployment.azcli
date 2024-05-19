@@ -1,38 +1,50 @@
 # Deploy spoke network in hub subscription
-$deploymentName = 'dev-02-network-hub'
 $location = 'uksouth'
-$parametersFile = '.\02-Network-Hub\main.bicepparam'
 $subscriptionId = 'bdccbf09-3420-4294-bd61-735b286edbbd'
 
 az deployment sub create `
---name $deploymentName `
+--name 'dev-02-network-hub' `
 --location $location `
---parameters  $parametersFile `
+--parameters  '.\02-Network-Hub\main.bicepparam' `
+--subscription $subscriptionId
+
+az deployment sub create `
+--name 'dev-02-network-updateUDR' `
+--location $location `
+--parameters  .\02-Network-Hub\updateUDR.bicepparam `
+--subscription $subscriptionId
+
+az deployment sub create `
+--name 'dev-02-network-vm' `
+--location $location `
+--parameters  .\02-Network-Hub\deploy-vm.bicepparam `
 --subscription $subscriptionId
 
 # deploy spoke network in spoke subscription
-$deploymentName = 'dev-02-network-spoke'
 $location = 'uksouth'
-$parametersFile = '.\03-Network-LZ\main.bicepparam'
 $subscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
 
 az deployment sub create `
---name $deploymentName `
+--name 'dev-03-network-spoke' `
 --location $location `
---parameters  $parametersFile `
+--parameters  '.\03-Network-LZ\main.bicepparam' `
+--subscription $subscriptionId
+
+az deployment sub create `
+--name 'dev-03-network-spoke-updateUDR' `
+--location $location `
+--parameters  '.\03-Network-LZ\updateUDR-NSG.bicepparam' `
 --subscription $subscriptionId
 
 
 # deploy aks supporting resources spoke subscription
-$deploymentName = 'dev-02-aks-supporting'
 $location = 'uksouth'
-$parametersFile = '.\04-AKS-Supporting\main.bicepparam'
 $subscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
 
 az deployment sub create `
---name $deploymentName `
+--name 'dev-04-aks-supporting' `
 --location $location `
---parameters  $parametersFile `
+--parameters  '.\04-AKS-Supporting\main.bicepparam' `
 --subscription $subscriptionId
 
 
@@ -49,16 +61,13 @@ az provider show --namespace Microsoft.OperationalInsights
 az feature show --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
 az feature show --namespace Microsoft.Compute --name EncryptionAtHost
 
-
-$deploymentName = 'dev-02-aks-deployment'
 $location = 'uksouth'
-$parametersFile = '.\05-AKS\main.bicepparam'
 $subscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
 
 az deployment sub create `
---name $deploymentName `
+--name 'dev-05-aks-deployment' `
 --location $location `
---parameters  $parametersFile `
+--parameters  '.\05-AKS\main.bicepparam' `
 --subscription $subscriptionId
 
 
