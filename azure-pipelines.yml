@@ -91,4 +91,7 @@ steps:
     inlineScript: |
       az deployment sub create --name '$(enviornmentName)-05-aks-deployment' --location $(azureregion) `
       --parameters  './05-AKS/main.bicepparam' `
-      --parameters rgName=$(AKSResourceGroup) privateDNSZoneAKSNameResourceGroup=$(SpokeNetworkResourceGroup) vnetspokeRGName=$(SpokeNetworkResourceGroup) aksadminGroupaccessprincipalId=$(AdminsGroupId) aksusersgroupaccessprincipalId=$(UsersGroupId)  privateDNSZoneAKSNameSubscriptionId=$(PrivateDNSSubscriptionId) acrName=$(ACRName)
+      --parameters rgName=$(AKSResourceGroup) privateDNSZoneAKSNameResourceGroup=$(SpokeNetworkResourceGroup) `
+      --parameters vnetspokeRGName=$(SpokeNetworkResourceGroup) aksadminGroupaccessprincipalId=$(AdminsGroupId) `
+      --parameters aksusersgroupaccessprincipalId=$(UsersGroupId)  privateDNSZoneAKSNameSubscriptionId=$(PrivateDNSSubscriptionId) `
+      --parameters acrName=$(ACRName)
