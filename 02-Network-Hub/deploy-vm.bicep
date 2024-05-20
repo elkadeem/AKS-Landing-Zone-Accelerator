@@ -1,6 +1,7 @@
 targetScope = 'subscription'
 
 param rgName string
+param vnetName string
 param vnetSubnetname string
 param vmsize string
 param location string = deployment().location
@@ -11,7 +12,7 @@ param adminPassword string
 
 resource subnetVM 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
   scope: resourceGroup(rgName)
-  name: vnetSubnetname
+  name: '${vnetName}/${vnetSubnetname}'
 }
 
 module jumbBox 'modules/vm/virtualmachine.bicep' = {
