@@ -26,7 +26,7 @@ param autoScalingProfile object
   'kubenet'
 ])
 param networkPlugin string = 'azure'
-
+param networkPluginMode string?
 resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
   name: aksName
   location: location  
@@ -48,7 +48,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
     }
     networkProfile: networkPlugin == 'azure'? {
       networkPlugin: 'azure'
-      networkPluginMode: 'overlay'
+      networkPluginMode: networkPluginMode
       outboundType: 'userDefinedRouting'
       serviceCidr: '192.168.100.0/24'
       dnsServiceIP: '192.168.100.10'
