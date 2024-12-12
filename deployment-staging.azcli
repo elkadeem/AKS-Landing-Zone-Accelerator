@@ -6,7 +6,7 @@
 
 # deploy spoke network in spoke subscription
 $location = 'westeurope'
-az deployment sub create --name 'dev-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-dev.bicepparam' 
+az deployment sub create --name 'staging-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-staging.bicepparam' 
 az deployment sub create --name 'dev-03-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG.bicepparam'
 
 
