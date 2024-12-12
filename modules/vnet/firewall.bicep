@@ -1,11 +1,12 @@
 param fwname string
 param fwipConfigurations array
 param fwipManagementConfigurations object
-param fwapplicationRuleCollections array
-param fwnetworkRuleCollections array
-param fwnatRuleCollections array
+param fwapplicationRuleCollections array = []
+param fwnetworkRuleCollections array = []
+param fwnatRuleCollections array = []
 param location string = resourceGroup().location
 param availabilityZones array
+param firewallPolicyId string
 
 resource firewall 'Microsoft.Network/azureFirewalls@2024-05-01' = {
   name: fwname
@@ -21,6 +22,9 @@ resource firewall 'Microsoft.Network/azureFirewalls@2024-05-01' = {
     applicationRuleCollections: fwapplicationRuleCollections
     networkRuleCollections: fwnetworkRuleCollections
     natRuleCollections: fwnatRuleCollections
+    firewallPolicy: {
+      id: firewallPolicyId
+    }
     additionalProperties: {
       'Network.DNS.EnableProxy': 'True'
     }

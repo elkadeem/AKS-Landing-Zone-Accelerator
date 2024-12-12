@@ -4,11 +4,18 @@ param rgName string
 param vnetHubName string
 param hubVnetAddressPrefixes array
 param hubSubnets array
+// Policy parameters
+param firewallPolicyName string
+param threatIntelMode string 
+param firewallPolicySku object
+param applicationRuleCollectionName string
+param applicationRuleCollectionPriority int
+param applicationsRuleCollections array
+param networkRuleCollectionName string
+param networkRuleCollectionPriority int
+param networksRuleCollections array
 param azfwName string
 param rtVMSubnetname string
-param fwApplicationRuleCollections array
-param fwNetworkRuleCollections array
-param fwNatRuleCollections array
 param location string = deployment().location
 param availabilityZones array
 
@@ -81,6 +88,41 @@ resource subnetFwManagement 'Microsoft.Network/virtualNetworks/subnets@2024-05-0
   name: '${vnetHub.name}/AzureFirewallManagementSubnet'
 }
 
+// Create firewall Policy
+module firewallPolicy '../modules/vnet/firewallpolicy.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: firewallPolicyName
+  params: {
+    firewallPolicyName: firewallPolicyName
+    location: location
+    firewallPolicySku: firewallPolicySku
+    threatIntelMode: threatIntelMode
+  }
+}
+
+// Create firewall rule collection group
+module ruleCollectionApplicationRules '../modules/vnet/firewallRuleCollectionGroup.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: applicationRuleCollectionName
+  params: {
+    firewallPolicyName: firewallPolicy.name
+    ruleCollectionGroupName: applicationRuleCollectionName
+    Priority: applicationRuleCollectionPriority
+    ruleCollections: applicationsRuleCollections
+  }
+}
+
+// Create firewall rule collection group
+module ruleCollectionNetworkRules '../modules/vnet/firewallRuleCollectionGroup.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: networkRuleCollectionName
+  params: {
+    firewallPolicyName: firewallPolicy.name
+    ruleCollectionGroupName: networkRuleCollectionName
+    Priority: networkRuleCollectionPriority
+    ruleCollections: networksRuleCollections
+  }
+}
 
 module azfirewall '../modules/vnet/firewall.bicep' = {
   scope: resourceGroup(rg.name)
@@ -89,6 +131,7 @@ module azfirewall '../modules/vnet/firewall.bicep' = {
     availabilityZones: availabilityZones
     location: location 
     fwname: azfwName
+    firewallPolicyId: firewallPolicy.outputs.firewallPolicyId
     fwipConfigurations: [
       {
         name: 'AZFW-PIP'
@@ -100,8 +143,8 @@ module azfirewall '../modules/vnet/firewall.bicep' = {
             id: publicipfw.outputs.publicipId
           }
         }
-      }      
-    ]
+      }  
+    ]        
     fwipManagementConfigurations: {
       name: 'AZFW-PIP-Management'
       properties: {
@@ -113,9 +156,6 @@ module azfirewall '../modules/vnet/firewall.bicep' = {
         }
       }
     }
-    fwapplicationRuleCollections: fwApplicationRuleCollections
-    fwnetworkRuleCollections: fwNetworkRuleCollections
-    fwnatRuleCollections: fwNatRuleCollections
   }
 }
 
