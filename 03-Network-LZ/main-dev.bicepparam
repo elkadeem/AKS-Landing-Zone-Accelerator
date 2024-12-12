@@ -1,6 +1,6 @@
 using './main.bicep'
 
-param rgName = 'rg-spoke-dev-westeuroup-01'
+param rgName = 'rg-spoke-dev-uksouth-01'
 param vnteSpokeName = 'vnet-spoke-dev-uksouth-01'
 param vnetSpokeAddressPrefixes = ['172.17.0.0/16']
 param vnetSpokeSubnets = [
@@ -43,8 +43,8 @@ param vnetSpokeSubnets = [
 param nsgAKSName = 'nsg-aks-dev-uksouth-01'
 param rtAKSSubnetname = 'rt-aks-dev-uksouth-01'
 param firewallIP = '10.0.1.4'
-param hubVnetName = 'vnet-hub-dev-uksouth-01'
-param hubSubscriptionId = 'bdccbf09-3420-4294-bd61-735b286edbbd'
+param hubVnetName = 'rg-hub-dev-uksouth-011'
+param hubSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
 param hubResourceGroupName = 'rg-hub-dev-uksouth-01'
 param appgwpipName = 'pip-agw-dev-uksouth-01'
 param appgwsubnetName = 'AppGWSubnet'

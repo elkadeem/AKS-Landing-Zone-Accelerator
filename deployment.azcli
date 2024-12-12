@@ -14,13 +14,15 @@ az feature show --namespace Microsoft.Compute --name EncryptionAtHost
 # Deploy spoke network in hub subscription
 $location = 'uksouth'
 $hubSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
-#$aksSubscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
+#$aksSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
 az deployment sub create --name 'dev-02-network-hub' --location $location ` --parameters  '.\02-Network-Hub\main.bicepparam' --subscription $hubSubscriptionId
 # az deployment sub create --name 'dev-02-network-updateUDR' --location $location --parameters  .\02-Network-Hub\updateUDR.bicepparam --subscription $hubSubscriptionId
 # az deployment sub create --name 'dev-02-network-vm' --location $location --parameters  .\02-Network-Hub\deploy-vm.bicepparam --subscription $hubSubscriptionId
 
 # deploy spoke network in spoke subscription
-az deployment sub create --name 'dev-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main.bicepparam' --subscription $aksSubscriptionId
+$location = 'uksouth'
+$aksSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
+az deployment sub create --name 'dev-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-dev.bicepparam' --subscription $aksSubscriptionId
 az deployment sub create --name 'dev-03-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG.bicepparam' --subscription $aksSubscriptionId
 
 
