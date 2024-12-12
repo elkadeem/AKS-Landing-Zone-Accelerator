@@ -27,7 +27,7 @@ az deployment sub create --name 'dev-03-network-spoke-updateUDR' --location $loc
 
 
 # deploy aks supporting resources spoke subscription
-az deployment sub create --name 'dev-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main.bicepparam' --subscription $aksSubscriptionId
+az deployment sub create --name 'dev-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main-dev.bicepparam' --subscription $aksSubscriptionId
 
 # deploy aks supporting resources spoke subscription
 az deployment sub create --name 'dev-05-aks-deployment' --location $location --parameters  '.\05-AKS\main.bicepparam' --subscription $aksSubscriptionId

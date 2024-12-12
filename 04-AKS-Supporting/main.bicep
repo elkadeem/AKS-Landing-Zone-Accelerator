@@ -4,6 +4,7 @@ param rgName string
 param location string = deployment().location
 param acrName string = 'eslzacr${uniqueString('acrvws', utcNow('u'))}'
 param keyvaultName string = 'eslz-kv-${uniqueString('acrvws', utcNow('u'))}'
+param enableAKVPurgeProtection bool = false
 param storageAccountName string = 'eslzsa${uniqueString('aks', utcNow('u'))}'
 param storageAccountType string
 param rgSpokevnetName string
@@ -45,6 +46,7 @@ module keyvault '../modules/keyvault/keyvault.bicep' = {
     keyVaultsku: 'Standard'
     name: keyvaultName
     tenantId: subscription().tenantId
+    enablePurgeProtection: enableAKVPurgeProtection
   }
 }
 
