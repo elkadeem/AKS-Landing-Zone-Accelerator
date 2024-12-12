@@ -27,7 +27,7 @@ param autoScalingProfile object
 ])
 param networkPlugin string = 'azure'
 
-resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
+resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
   name: aksName
   location: location  
   identity: {
@@ -48,6 +48,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' = {
     }
     networkProfile: networkPlugin == 'azure'? {
       networkPlugin: 'azure'
+      networkPluginMode: 'overlay'
       outboundType: 'userDefinedRouting'
       serviceCidr: '192.168.100.0/24'
       dnsServiceIP: '192.168.100.10'

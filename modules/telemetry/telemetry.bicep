@@ -8,7 +8,7 @@ param location string
 
 var telemetryId = 'a4c036ff-1c94-4378-862a-8e090a88da82-${location}'
 
-resource telemetrydeployment 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource telemetrydeployment 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: telemetryId
   location: location
   properties: {
