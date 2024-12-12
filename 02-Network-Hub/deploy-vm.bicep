@@ -14,7 +14,7 @@ resource subnetVM 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existin
   name: vnetSubnetname
 }
 
-module jumbBox 'modules/vm/virtualmachine.bicep' = {
+module jumbBox '../modules/vm/virtualmachine.bicep' = {
   scope: resourceGroup(rgName)
   name: 'jumbBox'
   params: {

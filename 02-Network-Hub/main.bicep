@@ -157,6 +157,10 @@ module azfirewall '../modules/vnet/firewall.bicep' = {
       }
     }
   }
+  dependsOn: [          
+      ruleCollectionApplicationRules
+      ruleCollectionNetworkRules
+    ]
 }
 
 

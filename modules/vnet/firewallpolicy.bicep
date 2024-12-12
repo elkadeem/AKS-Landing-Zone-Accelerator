@@ -17,17 +17,18 @@ param threatIntelMode string = 'Alert'
 param firewallPolicySku object = {
   tier: 'Standard'
 }
-
+param threatIntelWhitelist object = {
+  fqdns: []
+  ipAddresses: []
+}
 
 resource firewallPolicy 'Microsoft.Network/firewallPolicies@2024-05-01' = {
   name: firewallPolicyName
   location: location
-  properties: {
-    threatIntelMode: threatIntelMode
-    intrusionDetection: {
-      mode: 'Alert'
-    }
+  properties: {    
+    threatIntelMode: threatIntelMode    
     sku: firewallPolicySku
+    threatIntelWhitelist: threatIntelWhitelist
   }
 }
 

@@ -15,19 +15,19 @@ resource firewall 'Microsoft.Network/azureFirewalls@2024-05-01' = {
   properties: {
     sku: { 
       name: 'AZFW_VNet'
-      tier: 'Basic' 
+      tier: 'Standard' 
     }
     ipConfigurations: fwipConfigurations
     managementIpConfiguration: fwipManagementConfigurations
-    applicationRuleCollections: fwapplicationRuleCollections
-    networkRuleCollections: fwnetworkRuleCollections
-    natRuleCollections: fwnatRuleCollections
+    //applicationRuleCollections: fwapplicationRuleCollections
+    //networkRuleCollections: fwnetworkRuleCollections
+    //natRuleCollections: fwnatRuleCollections
     firewallPolicy: {
       id: firewallPolicyId
     }
-    additionalProperties: {
-      'Network.DNS.EnableProxy': 'True'
-    }
+    //additionalProperties: {
+    //  'Network.DNS.EnableProxy': 'True'
+    //}
   }
 }
 
