@@ -6,7 +6,7 @@ param location string = deployment().location
 param vnteSpokeName string
 param vnetSpokeAddressPrefixes array
 param vnetSpokeSubnets array
-param dhcpOptions object
+//param dhcpOptions object
 
 param nsgAKSName string
 param rtAKSSubnetname string
@@ -31,7 +31,7 @@ var privateDNSZoneAKSSuffixes = {
   AzureGermanCloud: '' //TODO: what is the correct value here?
 }
 
-module rg 'modules/resource-group/rg.bicep' = {
+module rg '../modules/resource-group/rg.bicep' = {
   name: rgName
   params: {
     location: location
@@ -39,7 +39,7 @@ module rg 'modules/resource-group/rg.bicep' = {
   }
 }
 
-module vnetSpoke 'modules/vnet/vnet.bicep' = {
+module vnetSpoke '../modules/vnet/vnet.bicep' = {
   name: vnteSpokeName
   scope: resourceGroup(rgName)
   params: {
@@ -49,14 +49,14 @@ module vnetSpoke 'modules/vnet/vnet.bicep' = {
       addressPrefixes: vnetSpokeAddressPrefixes 
     }    
     subnets: vnetSpokeSubnets
-    dhcpOptions: dhcpOptions
+    //dhcpOptions: dhcpOptions
   }
   dependsOn: [
     rg
   ]
 }
 
-module nsgAKS 'modules/vnet/nsg.bicep' = {
+module nsgAKS '../modules/vnet/nsg.bicep' = {
   name: nsgAKSName
   scope: resourceGroup(rgName)
   params: {
@@ -69,7 +69,7 @@ module nsgAKS 'modules/vnet/nsg.bicep' = {
   ]
 }
 
-module routetable 'modules/vnet/routetable.bicep' = {
+module routetable '../modules/vnet/routetable.bicep' = {
   name: rtAKSSubnetname
   scope: resourceGroup(rgName)
   params: {
@@ -81,7 +81,7 @@ module routetable 'modules/vnet/routetable.bicep' = {
   ]
 }
 
-module routetableroutes 'modules/vnet/routetableroutes.bicep' = {
+module routetableroutes '../modules/vnet/routetableroutes.bicep' = {
   scope: resourceGroup(rgName)
   name: 'aks-to-internet'
   params: {
@@ -99,13 +99,13 @@ module routetableroutes 'modules/vnet/routetableroutes.bicep' = {
 }
 
 
-resource vnethub 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource vnethub 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
   scope: resourceGroup(hubSubscriptionId, hubResourceGroupName)
   name: hubVnetName
 }
 
 
-module vnetperringhub 'modules/vnet/vnetpeering.bicep' = {
+module vnetperringhub '../modules/vnet/vnetpeering.bicep' = {
   name: 'vnetpeeringhub'
   scope: resourceGroup(hubSubscriptionId, hubResourceGroupName)
   params: {
@@ -121,11 +121,10 @@ module vnetperringhub 'modules/vnet/vnetpeering.bicep' = {
   }
   dependsOn: [
     vnethub
-    vnetSpoke
   ]
 }
 
-module vnetperringspoke 'modules/vnet/vnetpeering.bicep' = {
+module vnetperringspoke '../modules/vnet/vnetpeering.bicep' = {
   name: 'vnetpeeringspoke'
   scope: resourceGroup(rgName)
   params: {
@@ -141,12 +140,11 @@ module vnetperringspoke 'modules/vnet/vnetpeering.bicep' = {
   }
   dependsOn: [
     vnethub
-    vnetSpoke
   ]
 }
 
 // Private DNS Zone for ACR
-module privatednsACRZone 'modules/vnet/privatednszone.bicep' = {
+module privatednsACRZone '../modules/vnet/privatednszone.bicep' = {
   name: 'privatednsACRZone'
   scope: resourceGroup(rgName)
   params: {
@@ -157,7 +155,7 @@ module privatednsACRZone 'modules/vnet/privatednszone.bicep' = {
   ]
 }
 
-module privatednsACRLink 'modules/vnet/privatednslink.bicep' = {
+module privatednsACRLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsACRLink'
   scope: resourceGroup(rgName)
   params: {
@@ -166,14 +164,13 @@ module privatednsACRLink 'modules/vnet/privatednslink.bicep' = {
     vnetId: vnethub.id
   }
   dependsOn: [
-    privatednsACRZone
     vnethub
   ]
 }
 
 // Private DNS Zone for KeyVault
 
-module privatednsvalutZone 'modules/vnet/privatednszone.bicep' = {
+module privatednsvalutZone '../modules/vnet/privatednszone.bicep' = {
   name: 'privatednsvalutZone'
   scope: resourceGroup(rgName)
   params: {
@@ -184,7 +181,7 @@ module privatednsvalutZone 'modules/vnet/privatednszone.bicep' = {
   ]
 }
 
-module privatednsVaultLink 'modules/vnet/privatednslink.bicep' = {
+module privatednsVaultLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsVaultLink'
   scope: resourceGroup(rgName)
   params: {
@@ -192,16 +189,14 @@ module privatednsVaultLink 'modules/vnet/privatednslink.bicep' = {
     vnetName: vnethub.name
     vnetId: vnethub.id
   }
-  dependsOn: [
-    privatednsvalutZone
+  dependsOn: [    
     vnethub
   ]
 }
 
 
 // Private DNS Zone for Storage Account
-
-module privatednsStorageAccountZone 'modules/vnet/privatednszone.bicep' = {
+module privatednsStorageAccountZone '../modules/vnet/privatednszone.bicep' = {
   name: 'privatednsSAZone'
   scope: resourceGroup(rgName)
   params: {
@@ -212,7 +207,7 @@ module privatednsStorageAccountZone 'modules/vnet/privatednszone.bicep' = {
   ]
 }
 
-module privatednsStorageAccounttLink 'modules/vnet/privatednslink.bicep' = {
+module privatednsStorageAccounttLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsSALink'
   scope: resourceGroup(rgName)
   params: {
@@ -220,14 +215,13 @@ module privatednsStorageAccounttLink 'modules/vnet/privatednslink.bicep' = {
     vnetName: vnethub.name
     vnetId: vnethub.id
   }
-  dependsOn: [
-    privatednsStorageAccountZone
+  dependsOn: [    
     vnethub
   ]
 }
 
 // Private DNS Zone for AKS
-module privatednsAKSZone 'modules/vnet/privatednszone.bicep' = {
+module privatednsAKSZone '../modules/vnet/privatednszone.bicep' = {
   name: 'privatednsaksZone'
   scope: resourceGroup(rgName)
   params: {
@@ -238,7 +232,7 @@ module privatednsAKSZone 'modules/vnet/privatednszone.bicep' = {
   ]
 }
 
-module privatednsAKSLink 'modules/vnet/privatednslink.bicep' = {
+module privatednsAKSLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsAKSLink'
   scope: resourceGroup(rgName)
   params: {
@@ -246,14 +240,13 @@ module privatednsAKSLink 'modules/vnet/privatednslink.bicep' = {
     vnetName: vnethub.name
     vnetId: vnethub.id
   }
-  dependsOn: [
-    privatednsAKSZone
+  dependsOn: [    
     vnethub
   ]
 }
 
 
-module publicipappgw 'modules/vnet/publicip.bicep' = {
+module publicipappgw '../modules/vnet/publicip.bicep' = {
   scope: resourceGroup(rgName)
   name: appgwpipName
   params: {
@@ -273,13 +266,13 @@ module publicipappgw 'modules/vnet/publicip.bicep' = {
   ]
 }
 
-resource appgwsubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource appgwsubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
   scope: resourceGroup(rgName)
   name: '${vnteSpokeName}/${appgwsubnetName}' 
 }
 
 
-module appgw 'modules/vnet/applicationgateway.bicep' = {
+module appgw '../modules/vnet/applicationgateway.bicep' = {
   scope: resourceGroup(rgName)
   name: appgwName
   params: {
@@ -289,13 +282,12 @@ module appgw 'modules/vnet/applicationgateway.bicep' = {
     subnetId: appgwsubnet.id
   }
   dependsOn: [
-    publicipappgw
     appgwsubnet
   ]
 }
 
 
-module nsgappgwsubnet 'modules/vnet/nsg.bicep' = {
+module nsgappgwsubnet '../modules/vnet/nsg.bicep' = {
   name: nsgappgwName
   scope: resourceGroup(rgName)
   params: {
@@ -374,7 +366,7 @@ module nsgappgwsubnet 'modules/vnet/nsg.bicep' = {
   ]
 }
 
-module appgwroutetable 'modules/vnet/routetable.bicep' = {
+module appgwroutetable '../modules/vnet/routetable.bicep' = {
   name: appgwroutetableName
   scope: resourceGroup(rgName)
   params: {

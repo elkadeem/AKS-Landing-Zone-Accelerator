@@ -1,41 +1,42 @@
 using './main.bicep'
 
-param rgName = 'rg-spoke-dev-uksouth-01'
+param rgName = 'rg-spoke-dev-westeuroup-01'
 param vnteSpokeName = 'vnet-spoke-dev-uksouth-01'
-param vnetSpokeAddressPrefixes = ['10.1.0.0/16']
+param vnetSpokeAddressPrefixes = ['172.17.0.0/16']
 param vnetSpokeSubnets = [
   {
-    name: 'default'
+    name: 'vmsubnet'
     properties: {
-      addressPrefix: '10.1.0.0/24'
+      addressPrefix: '172.17.0.0/24'
     }
   }
   {
     name: 'AKS'
     properties: {
-      addressPrefix: '10.1.1.0/24'
+      addressPrefix: '172.17.1.0/24'
     }
   }  
   {
-    name: 'AppGWSubnet'
+    name: 'datasubnet'
     properties: {
-      addressPrefix: '10.1.2.0/24'
+      addressPrefix: '172.17.2.0/24'
     }
   }
   {
-    name: 'vmsubnet'
+    name: 'AppGWSubnet'
     properties: {
-      addressPrefix: '10.1.3.0/24'
+      addressPrefix: '172.17.3.0/24'
     }
-  }
+  }  
   {
     name: 'servicespe'
     properties: {
-      addressPrefix: '10.1.4.0/24'
+      addressPrefix: '172.17.4.0/24'
       privateEndpointNetworkPolicies: 'Disabled'
     }
   }
 ]
+
 //param dhcpOptions = {
   // dnsServers: ['10.0.1.4'] // firewall private IP address if it is DNS server
 //}
