@@ -7,7 +7,7 @@ param fwnatRuleCollections array
 param location string = resourceGroup().location
 param availabilityZones array
 
-resource firewall 'Microsoft.Network/azureFirewalls@2023-11-01' = {
+resource firewall 'Microsoft.Network/azureFirewalls@2024-05-01' = {
   name: fwname
   location: location
   zones: !empty(availabilityZones) ? availabilityZones : null

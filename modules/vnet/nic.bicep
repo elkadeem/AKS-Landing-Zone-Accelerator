@@ -2,7 +2,7 @@ param subnetid string
 param location string = resourceGroup().location
 param nicName string
 
-resource vmnic 'Microsoft.Network/networkInterfaces@2023-11-01' = {
+resource vmnic 'Microsoft.Network/networkInterfaces@2024-05-01' = {
   name: nicName
   location: location
   properties: {

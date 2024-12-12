@@ -4,7 +4,7 @@ param publicipproperties object
 param location string = resourceGroup().location
 param availabilityZones array
 
-resource publicip 'Microsoft.Network/publicIPAddresses@2023-11-01' = {
+resource publicip 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
   name: publicipName
   location: location
   sku: publicipsku
