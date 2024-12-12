@@ -43,9 +43,12 @@ param vnetSpokeSubnets = [
 param nsgAKSName = 'nsg-aks-dev-uksouth-01'
 param rtAKSSubnetname = 'rt-aks-dev-uksouth-01'
 param firewallIP = '10.0.1.4'
-param hubVnetName = 'rg-hub-dev-uksouth-011'
+
 param hubSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
 param hubResourceGroupName = 'rg-hub-dev-uksouth-01'
+param hubVnetName = 'vnet-hub-dev-uksouth-01'
+
+
 param appgwpipName = 'pip-agw-dev-uksouth-01'
 param appgwsubnetName = 'AppGWSubnet'
 param appgwName = 'agw-dev-uksouth-01'
