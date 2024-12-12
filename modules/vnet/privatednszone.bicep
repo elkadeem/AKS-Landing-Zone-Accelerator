@@ -1,6 +1,6 @@
 param privateDNSZoneName string
 
-resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: privateDNSZoneName
   location: 'global'
 }

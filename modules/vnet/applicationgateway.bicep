@@ -11,7 +11,7 @@ var backendpoolname = 'appGatewayBackendPool'
 var backendhttpsettingsname = 'appGatewayBackendHttpSettings'
 var httpListenerName = 'appGatewayHttpListener'
 
-resource appgw 'Microsoft.Network/applicationGateways@2023-11-01' = {
+resource appgw 'Microsoft.Network/applicationGateways@2024-05-01' = {
  name: appgwname
  location: location
  zones: !empty(availabilityZones)? availabilityZones : null

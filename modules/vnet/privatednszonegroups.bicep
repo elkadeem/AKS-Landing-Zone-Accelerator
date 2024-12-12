@@ -2,7 +2,7 @@ param privateEndpointName string
 param privateDNSZoneId string
 
 
-resource privateDNSZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+resource privateDNSZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
   name: '${privateEndpointName}/dnsgroupname'
   properties: {
     privateDnsZoneConfigs: [

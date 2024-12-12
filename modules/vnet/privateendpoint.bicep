@@ -3,7 +3,7 @@ param subnetid string
 param privateLinkServiceConnections array
 param location string = resourceGroup().location
 
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' = {
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: privateEndpointName
   location: location
   properties: {
