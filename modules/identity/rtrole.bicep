@@ -1,16 +1,16 @@
 param principalId string
 param roleGuid string
-param applicationGatewayName string
+param rtName string
 
-resource applicationGateway 'Microsoft.Network/applicationGateways@2023-11-01' existing = {
-  name: applicationGatewayName
+resource rt 'Microsoft.Network/routeTables@2024-05-01' existing = {
+  name: rtName
 }
 
 resource role_assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(subscription().id, principalId, roleGuid)
+  name: guid(subscription().id, principalId, roleGuid, rtName)
   properties: {
     principalId: principalId
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roleGuid)
   }
-  scope: applicationGateway
+  scope: rt
 }

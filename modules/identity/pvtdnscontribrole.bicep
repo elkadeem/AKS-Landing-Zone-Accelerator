@@ -1,9 +1,9 @@
 param principalId string
 param roleGuid string
-param vnetName string
+param pvtdnsAKSZoneName string
 
-resource spokeVnet 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
-  name: vnetName
+resource pvtdnsAKSZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
+  name: pvtdnsAKSZoneName
 }
 
 resource role_assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -12,5 +12,5 @@ resource role_assignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
     principalId: principalId
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roleGuid)
   }
-  scope: spokeVnet
+  scope: pvtdnsAKSZone
 }
