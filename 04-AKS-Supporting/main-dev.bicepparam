@@ -1,6 +1,6 @@
 using './main.bicep'
 
-param rgName = 'rg-aks-dev-uksouth-001'
+param rgName = 'rg-spoke-dev-uksouth-01'
 param location = 'uksouth'
 param acrName = 'welkacraksdev001'
 param enableAKVPurgeProtection = false
