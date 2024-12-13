@@ -1,5 +1,6 @@
 targetScope = 'subscription'
 
+
 param rgName string
 param location string = deployment().location
 param aksIdentityName string
@@ -16,10 +17,22 @@ param rtaksName string
 
 param aksClusterName string
 param kubernetesVersion string
-param aksSKU object = {
-  name: 'Base'
-  tier: 'Free'
-}
+@description('Optional. Name of a managed cluster SKU.')
+@allowed([
+  'Base'
+  'Automatic'
+])
+
+param skuName string = 'Base'
+
+@description('Optional. Tier of a managed cluster SKU.')
+@allowed([
+  'Free'
+  'Premium'
+  'Standard'
+])
+
+param skuTier string = 'Standard'
 param aksadminGroupaccessprincipalId string
 param aksusersgroupaccessprincipalId string
 param enableAzurePolicy bool = true
@@ -33,10 +46,36 @@ param autoScalingProfile object
   'azure'
   'kubenet'
 ])
-param networkPlugin string = 'azure'
+param aksNetworkPlugin string = 'azure'
+@description('Optional. Network plugin mode used for building the Kubernetes network. Not compatible with kubenet network plugin.')
+@allowed([
+  'overlay'
+])
+param aksNetworkPluginMode string?
+param aksPodCidr string?
+param aksServiceCidr string
+param aksDnsServiceIP string
+param aksNetworkPolicy string = 'calico'
+
+param aksSystemPoolVMSize string = 'Standard_D4d_v4'
+param aksSystemPoolNodesCount int = 3
+param aksUserPoolVMSize string = 'Standard_D4d_v4'
+param aksUserPoolNodesCount int = 3
+
 
 param acrName string
 param keyvaultName string
+
+@description('Optional. Specifies outbound (egress) routing method.')
+@allowed([
+  'loadBalancer'
+  'userDefinedRouting'
+  'managedNATGateway'
+  'userAssignedNATGateway'
+])
+param aksOutboundType string = 'loadBalancer'
+param aksEnableWebRoutingAddOn bool = true
+param aksWebRoutingAddOnDnsZoneResourceIds array?
 
 var aksInfrastractureRGName = 'rg-${aksClusterName}-${toLower(location)}-aksInfra'
 var akskubenetpodcidr = '172.17.0.0/24'
@@ -115,7 +154,6 @@ module aks '../modules/aks/privateaks.bicep' = {
   params: {
     autoScalingProfile: autoScalingProfile
     enableAutoScaling: enableAutoScaling
-    availabilityZones: availabilityZones
     aksInfrastractureRGName: aksInfrastractureRGName
     location: location
     aksadminGroupObjectIDs: [
@@ -123,11 +161,19 @@ module aks '../modules/aks/privateaks.bicep' = {
     ]
     aksName: aksClusterName
     kubernetesVersion: kubernetesVersion
-    networkPlugin: networkPlugin
+    networkPlugin: aksNetworkPlugin
+    networkPluginMode:  aksNetworkPluginMode
+    podCidr: aksPodCidr
+    serviceCidr: aksServiceCidr
+    dnsServiceIP: aksDnsServiceIP
+    networkPolicy: aksNetworkPolicy
+    outboundType: aksOutboundType
     logAnalyticsWorkspaceResourceID: akslaworkspace.outputs.laworkspaceId
-    aksPrivateDNSZone: privatednsAKSZone.id
-    aksSubnetId: akssubnet.id
-    aksSKU: aksSKU
+    aksPrivateDNSZone: privatednsAKSZone.id    
+    aksSKU: {
+      name: skuName
+      tier: skuTier
+    }
     aksIdentity: {
       '${aksIdentity.id}': {}
     }
@@ -136,6 +182,38 @@ module aks '../modules/aks/privateaks.bicep' = {
     enableOMSAgent: enableOMSAgent
     enableIngressApplicationGateway: enableIngressApplicationGateway
     enableWorkloadIdentity: enableWorkloadIdentity
+    agentPoolProfiles: [
+      {
+        name: 'defaultpool'
+        count: aksSystemPoolNodesCount
+        availabilityZones: !empty(availabilityZones) ? availabilityZones : null
+        enableAutoScaling: enableAutoScaling
+        minCount: enableAutoScaling ? 1 : null
+        maxCount: enableAutoScaling ? 3 : null
+        mode: 'System'
+        osDiskSizeGB: 30
+        vmSize: aksSystemPoolVMSize
+        type: 'VirtualMachineScaleSets'
+        vnetSubnetID: akssubnet.id
+        enableEncryptionAtHost: true
+      }
+      {
+        name: 'userDefaultpool'
+        count: aksUserPoolNodesCount
+        availabilityZones: !empty(availabilityZones) ? availabilityZones : null
+        enableAutoScaling: enableAutoScaling
+        minCount: enableAutoScaling ? 1 : null
+        maxCount: enableAutoScaling ? 3 : null
+        mode: 'User'
+        osDiskSizeGB: 30
+        vmSize: aksUserPoolVMSize
+        type: 'VirtualMachineScaleSets'
+        vnetSubnetID: akssubnet.id
+        enableEncryptionAtHost: true
+      }
+    ]
+    enableWebRoutingAddOn: aksEnableWebRoutingAddOn
+    webRoutingAddOnDnsZoneResourceIds: aksWebRoutingAddOnDnsZoneResourceIds
   }
   dependsOn: [    
     aksIdentity
@@ -254,7 +332,7 @@ resource rtAppGW  'Microsoft.Network/routeTables@2024-05-01' existing = {
   name: rtAppGWSubnetName
 }
 
-module appgwroutetableroutes '../modules/vnet/routetableroutes.bicep' = [for i in range(0, 3): if (networkPlugin == 'kebenet') {
+module appgwroutetableroutes '../modules/vnet/routetableroutes.bicep' = [for i in range(0, 3): if (aksNetworkPlugin == 'kebenet') {
   scope: resourceGroup(vnetspokeRGName)
   name: 'aks-vmss-appgw-pod-node-${i}'
   params: {
