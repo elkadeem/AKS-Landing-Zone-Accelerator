@@ -1,6 +1,6 @@
 using './main.bicep'
 
-var aksSubnetPrefix = '10.1.1.0/24'
+var aksSubnetPrefix = '172.17.1.0/24'
 
 param rgName = 'rg-hub-dev-uksouth-01'
 param vnetHubName = 'vnet-hub-dev-uksouth-01'

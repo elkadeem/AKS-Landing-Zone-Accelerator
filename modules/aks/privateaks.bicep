@@ -128,7 +128,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
 }
 
 output kubletetIdentity string = aks.properties.identityProfile.kubeletidentity.objectId
-output ingressIdentity string = aks.properties.addonProfiles.ingressApplicationGateway.identity.objectId
+output ingressIdentity string = enableIngressApplicationGateway
+? aks.properties.addonProfiles.ingressApplicationGateway.identity.objectId : ''
 output keyVaultaddonIdentity string = aks.properties.addonProfiles.azureKeyVaultSecretsProvider.identity.objectId
 output oidcIdentity string = aks.properties.oidcIssuerProfile.issuerURL
-output webRoutingIdentity string = aks.properties.ingressProfile.webAppRouting.identity.objectId
+output webRoutingIdentity string = enableWebRoutingAddOn
+? aks.properties.ingressProfile.webAppRouting.identity.objectId : ''

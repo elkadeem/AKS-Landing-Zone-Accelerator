@@ -9,4 +9,3 @@ if (!(Get-Command az -ErrorAction SilentlyContinue)) {
     az ad group create --display-name $appdevs --mail-nickname $appdevs
     az ad group create --display-name $aksops --mail-nickname $aksops
 }
-

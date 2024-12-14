@@ -76,6 +76,7 @@ param keyvaultName string
 param aksOutboundType string = 'loadBalancer'
 param aksEnableWebRoutingAddOn bool = true
 param aksWebRoutingAddOnDnsZoneResourceIds array?
+param enableDnsZoneContributorRoleAssignment bool = false
 
 var aksInfrastractureRGName = 'rg-${aksClusterName}-${toLower(location)}-aksInfra'
 var akskubenetpodcidr = '172.17.0.0/24'
@@ -143,7 +144,7 @@ resource akssubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existi
   name: '${aksvnetName}/${akssubnetName}'
 }
 
-resource appGateway 'Microsoft.Network/applicationGateways@2024-05-01' existing = {
+resource appGateway 'Microsoft.Network/applicationGateways@2024-05-01' existing = if (enableIngressApplicationGateway) {
   scope: resourceGroup(vnetspokeRGName)
   name: aksAppGatewayName
 }
@@ -177,7 +178,7 @@ module aks '../modules/aks/privateaks.bicep' = {
     aksIdentity: {
       '${aksIdentity.id}': {}
     }
-    applicationGatewayResourceId: appGateway.id
+    applicationGatewayResourceId: enableIngressApplicationGateway? appGateway.id : ''
     enableAzurePolicy: enableAzurePolicy
     enableOMSAgent: enableOMSAgent
     enableIngressApplicationGateway: enableIngressApplicationGateway
@@ -198,7 +199,7 @@ module aks '../modules/aks/privateaks.bicep' = {
         enableEncryptionAtHost: true
       }
       {
-        name: 'userDefaultpool'
+        name: 'userpool'
         count: aksUserPoolNodesCount
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         enableAutoScaling: enableAutoScaling
@@ -299,7 +300,7 @@ module aksadminaccess '../modules/Identity/role.bicep' = {
   }
 }
 
-module appGatewayContributorRole '../modules/Identity/role.bicep' = {
+module appGatewayContributorRole '../modules/Identity/role.bicep' = if (enableIngressApplicationGateway) {
   scope: resourceGroup(vnetspokeRGName)
   name: 'appGatewayContributor'
   params: {
@@ -308,7 +309,7 @@ module appGatewayContributorRole '../modules/Identity/role.bicep' = {
   }
 }
 
-module appGatewayReaderRole '../modules/Identity/role.bicep' = {
+module appGatewayReaderRole '../modules/Identity/role.bicep' = if (enableIngressApplicationGateway) {
   scope: resourceGroup(vnetspokeRGName)
   name: 'appGatewayReader'
   params: {
@@ -343,5 +344,16 @@ module appgwroutetableroutes '../modules/vnet/routetableroutes.bicep' = [for i i
     }
     routeName: 'aks-vmss-appgw-pod-node-${i}'
     routeTableName: rtAppGW.name
+  }
+}]
+
+
+module dnsZoneRoleAssignment '../modules/identity/webroutingdnsroleassignment.bicep' =  [for dnsZoneResourceId in (aksWebRoutingAddOnDnsZoneResourceIds ?? []): if(enableDnsZoneContributorRoleAssignment && aksEnableWebRoutingAddOn) {
+  scope: resourceGroup(dnsZoneResourceId)
+  name: 'dnsZoneRoleAssignment'
+  params: {
+    principalId: aks.outputs.webRoutingIdentity
+    roleGuid: 'b24988ac-6180-42a0-ab88-20f7382dd24c' //DNS Zone Contributor
+    dnsZoneResourceId: dnsZoneResourceId
   }
 }]
