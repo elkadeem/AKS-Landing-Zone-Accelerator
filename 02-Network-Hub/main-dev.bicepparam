@@ -167,6 +167,8 @@ param applicationsRuleCollections = [
               '*.quay.io'
               '*.cloudfront.net'
               'production.cloudflare.docker.com'
+              'ghcr.io'
+              'pkg-containers.githubusercontent.com'
             ]
             targetUrls: []
             terminateTLS: false

@@ -5,5 +5,5 @@ param vnetSubnetname = 'vmsubnet'
 param vmsize = 'Standard_B2ms'
 param location = 'uksouth'
 param adminUsername = 'azureuser'
-param adminPassword = readEnvironmentVariable('vmAdminPassword', 'P@ssword@123')
+param adminPassword = readEnvironmentVariable('vmAdminPassword', '')
 

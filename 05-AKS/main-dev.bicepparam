@@ -49,7 +49,7 @@ param aksNetworkPluginMode = 'overlay'
 param aksPodCidr = '172.50.0.0/16'
 param aksServiceCidr = '192.168.100.0/24'
 param aksDnsServiceIP = '192.168.100.10'
-param aksNetworkPolicy = 'calico'
+param aksNetworkPolicy = 'azure'
 param aksOutboundType = 'userDefinedRouting'
 
 param aksSystemPoolVMSize = 'Standard_D4d_v4'

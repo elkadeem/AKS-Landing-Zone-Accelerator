@@ -30,7 +30,13 @@ param networkPluginMode string?
 param podCidr string?
 param serviceCidr string
 param dnsServiceIP string
-param networkPolicy string = 'calico'
+@description('Optional. Specifies the network policy used for building Kubernetes network. - calico or azure.')
+@allowed([
+  'azure'
+  'calico'
+  'cilium'
+])
+param networkPolicy string?
 @description('Optional. Specifies outbound (egress) routing method.')
 @allowed([
   'loadBalancer'
@@ -71,6 +77,10 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
       serviceCidr: serviceCidr
       dnsServiceIP: dnsServiceIP
       networkPolicy: networkPolicy
+      loadBalancerProfile:{
+        backendPoolType: 'NodeIPConfiguration'                
+      }
+      loadBalancerSku: 'standard'
     }
     addonProfiles: {
       azurepolicy: {
@@ -121,9 +131,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
       webAppRouting: {
         enabled: enableWebRoutingAddOn
         dnsZoneResourceIds: enableWebRoutingAddOn && !empty(webRoutingAddOnDnsZoneResourceIds)
-          ? webRoutingAddOnDnsZoneResourceIds : null
+          ? webRoutingAddOnDnsZoneResourceIds : null        
       }
-    }
+    }    
   }
 }
 

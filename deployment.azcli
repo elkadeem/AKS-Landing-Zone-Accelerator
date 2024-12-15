@@ -4,6 +4,7 @@ az provider register --namespace Microsoft.OperationsManagement
 az provider register --namespace Microsoft.OperationalInsights
 az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
 az feature register --namespace Microsoft.Compute --name EncryptionAtHost
+az feature register --namespace "Microsoft.ContainerService" --name "EnableSLBSharedHealthProbePreview"
 
 az provider show --namespace Microsoft.ContainerService
 az provider show --namespace Microsoft.OperationsManagement
@@ -46,3 +47,5 @@ az deployment sub delete --name 'dev-03-network-spoke' --subscription $aksSubscr
 az deployment sub delete --name 'dev-03-network-spoke-updateUDR' --subscription $aksSubscriptionId
 az deployment sub delete --name 'dev-04-aks-supporting' --subscription $aksSubscriptionId
 az deployment sub delete --name 'dev-05-aks-deployment' --subscription $aksSubscriptionId
+
+ # $ENV:AZURE_CLI_DISABLE_CONNECTION_VERIFICATION='true'
