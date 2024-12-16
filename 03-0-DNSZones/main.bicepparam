@@ -1,4 +1,4 @@
 using './main.bicep'
 
-param rgName = 'rg-privatedns-uksouth'
+param rgName = 'rg-private-dns-zones'
 

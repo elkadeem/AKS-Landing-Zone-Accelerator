@@ -60,3 +60,5 @@ param appgwAutoScale = {
 param nsgappgwName = 'nsg-agw-dev-uksouth-01'
 param appgwroutetableName = 'rt-agw-dev-uksouth-01'
 
+param dnsZonesrgName = 'rg-private-dns-zones'
+param dnsZonesresourceGroupSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'

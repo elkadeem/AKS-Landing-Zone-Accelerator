@@ -59,12 +59,12 @@ param aksNetworkPolicy string = 'calico'
 
 param aksSystemPoolVMSize string = 'Standard_D4d_v4'
 param aksSystemPoolNodesCount int = 3
-param aksSystemPoolNodeMin = 1
-param aksSystemPoolNodeMax=3
+param aksSystemPoolNodeMin int = 1
+param aksSystemPoolNodeMax int =3
 param aksUserPoolVMSize string = 'Standard_D4d_v4'
 param aksUserPoolNodesCount int = 3
-param aksUserPoolNodeMin = 1
-param aksUserPoolNodeMax= 3
+param aksUserPoolNodeMin int = 1
+param aksUserPoolNodeMax int = 3
 
 
 param acrName string

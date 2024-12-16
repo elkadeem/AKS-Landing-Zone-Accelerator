@@ -156,7 +156,7 @@ resource privatednsACRZone 'Microsoft.Network/privateDnsZones@2024-06-01' existi
 
 module privatednsACRLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsACRLink'
-  scope: resourceGroup(rgName)
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)
   params: {
     privateDNSZoneName: privatednsACRZone.name
     vnetName: vnethub.name
@@ -176,7 +176,7 @@ resource privatednsvalutZone 'Microsoft.Network/privateDnsZones@2024-06-01' exis
 
 module privatednsVaultLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsVaultLink'
-  scope: resourceGroup(rgName)
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)
   params: {
     privateDNSZoneName: privatednsvalutZone.name
     vnetName: vnethub.name
@@ -196,7 +196,7 @@ resource privatednsStorageAccountZone 'Microsoft.Network/privateDnsZones@2024-06
 
 module privatednsStorageAccounttLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsSALink'
-  scope: resourceGroup(rgName)
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)
   params: {
     privateDNSZoneName: privatednsStorageAccountZone.name
     vnetName: vnethub.name
@@ -215,7 +215,7 @@ resource privatednsAKSZone 'Microsoft.Network/privateDnsZones@2024-06-01' existi
 
 module privatednsAKSLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsAKSLink'
-  scope: resourceGroup(rgName)
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)
   params: {
     privateDNSZoneName: privatednsAKSZone.name
     vnetName: vnethub.name
