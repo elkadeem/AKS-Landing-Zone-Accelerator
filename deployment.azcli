@@ -20,6 +20,10 @@ az deployment sub create --name 'dev-02-network-hub' --location $location ` --pa
 #az deployment sub create --name 'dev-02-network-updateUDR' --location $location --parameters  .\02-Network-Hub\updateUDR.bicepparam --subscription $hubSubscriptionId
 #az deployment sub create --name 'dev-02-network-vm' --location $location --parameters  .\02-Network-Hub\deploy-vm.bicepparam --subscription $hubSubscriptionId
 
+# Deploy DNS Zones if there is no Azure Landing zone with needed zones
+$location = 'uksouth'
+az deployment sub create --name 'dev-03-private-dns-zones' --location $location --parameters  '.\03-Network-LZ\main.bicepparam' --subscription $aksSubscriptionId
+
 # deploy spoke network in spoke subscription
 $location = 'uksouth'
 $aksSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'

@@ -23,6 +23,8 @@ param availabilityZones array
 param appgwAutoScale object
 param nsgappgwName string
 param appgwroutetableName string
+param dnsZonesrgName string
+param dnsZonesresourceGroupSubscriptionId string
 
 var privateDNSZoneAKSSuffixes = {
   AzureCloud: '.azmk8s.io'
@@ -144,12 +146,9 @@ module vnetperringspoke '../modules/vnet/vnetpeering.bicep' = {
 }
 
 // Private DNS Zone for ACR
-module privatednsACRZone '../modules/vnet/privatednszone.bicep' = {
-  name: 'privatednsACRZone'
-  scope: resourceGroup(rgName)
-  params: {
-    privateDNSZoneName: 'privatelink${environment().suffixes.acrLoginServer}'  
-  }
+resource privatednsACRZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing =  {
+  name: 'privatelink${environment().suffixes.acrLoginServer}'  
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)  
   dependsOn: [
     rg
   ]
@@ -159,7 +158,7 @@ module privatednsACRLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsACRLink'
   scope: resourceGroup(rgName)
   params: {
-    privateDNSZoneName: privatednsACRZone.outputs.privateDNSZoneName
+    privateDNSZoneName: privatednsACRZone.name
     vnetName: vnethub.name
     vnetId: vnethub.id
   }
@@ -170,22 +169,16 @@ module privatednsACRLink '../modules/vnet/privatednslink.bicep' = {
 
 // Private DNS Zone for KeyVault
 
-module privatednsvalutZone '../modules/vnet/privatednszone.bicep' = {
-  name: 'privatednsvalutZone'
-  scope: resourceGroup(rgName)
-  params: {
-    privateDNSZoneName: 'privatelink.vaultcore.azure.net'  
-  }
-  dependsOn: [
-    rg
-  ]
+resource privatednsvalutZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)
+  name: 'privatelink.vaultcore.azure.net'
 }
 
 module privatednsVaultLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsVaultLink'
   scope: resourceGroup(rgName)
   params: {
-    privateDNSZoneName: privatednsvalutZone.outputs.privateDNSZoneName
+    privateDNSZoneName: privatednsvalutZone.name
     vnetName: vnethub.name
     vnetId: vnethub.id
   }
@@ -196,22 +189,16 @@ module privatednsVaultLink '../modules/vnet/privatednslink.bicep' = {
 
 
 // Private DNS Zone for Storage Account
-module privatednsStorageAccountZone '../modules/vnet/privatednszone.bicep' = {
-  name: 'privatednsSAZone'
-  scope: resourceGroup(rgName)
-  params: {
-    privateDNSZoneName: 'privatelink.file.${environment().suffixes.storage}'  
-  }
-  dependsOn: [
-    rg
-  ]
+resource privatednsStorageAccountZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)
+  name: 'privatelink.file.${environment().suffixes.storage}'
 }
 
 module privatednsStorageAccounttLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsSALink'
   scope: resourceGroup(rgName)
   params: {
-    privateDNSZoneName: privatednsStorageAccountZone.outputs.privateDNSZoneName
+    privateDNSZoneName: privatednsStorageAccountZone.name
     vnetName: vnethub.name
     vnetId: vnethub.id
   }
@@ -221,22 +208,16 @@ module privatednsStorageAccounttLink '../modules/vnet/privatednslink.bicep' = {
 }
 
 // Private DNS Zone for AKS
-module privatednsAKSZone '../modules/vnet/privatednszone.bicep' = {
-  name: 'privatednsaksZone'
-  scope: resourceGroup(rgName)
-  params: {
-    privateDNSZoneName: 'privatelink.${toLower(location)}${privateDNSZoneAKSSuffixes[environment().name]}'  
-  }
-  dependsOn: [
-    rg
-  ]
+resource privatednsAKSZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = {
+  scope: resourceGroup(dnsZonesresourceGroupSubscriptionId, dnsZonesrgName)
+  name: 'privatelink.${toLower(location)}${privateDNSZoneAKSSuffixes[environment().name]}'
 }
 
 module privatednsAKSLink '../modules/vnet/privatednslink.bicep' = {
   name: 'privatednsAKSLink'
   scope: resourceGroup(rgName)
   params: {
-    privateDNSZoneName: privatednsAKSZone.outputs.privateDNSZoneName
+    privateDNSZoneName: privatednsAKSZone.name
     vnetName: vnethub.name
     vnetId: vnethub.id
   }

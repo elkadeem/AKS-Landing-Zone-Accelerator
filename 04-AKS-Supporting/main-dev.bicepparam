@@ -14,6 +14,6 @@ param keyVaultPrivateEndpointName = 'keyvault-pvt-ep'
 param acrPrivateEndpointName = 'acr-pvt-ep'
 param saPrivateEndpointName = 'sa-pvt-ep'
 param privatednszonesSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
-param privatednszonesRGName = 'rg-spoke-dev-uksouth-01'
+param privatednszonesRGName = 'rg-privatedns-uksouth'
 param aksIdentityName = 'aksdevIdentity'
 
