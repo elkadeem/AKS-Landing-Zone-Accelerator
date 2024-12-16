@@ -1,14 +1,14 @@
 using './main.bicep'
 
-param rgName = 'rg-spoke-staging-weurope-01'
+param rgName = 'rg-aks-staging-weurope-01'
 param location = 'westeurope'
 param aksIdentityName = 'aksdevIdentity'
 param privateDNSZoneAKSName = ''
 param privateDNSZoneAKSNameSubscriptionId = 'e7fe8544-3beb-41e8-b5ea-3bb0de3f7f69'
-param privateDNSZoneAKSNameResourceGroup = 'rg-spoke-staging-weurope-01'
+param privateDNSZoneAKSNameResourceGroup = 'rg-aks-staging-weurope-01'
 param akslaworkspaceName = 'log-staging-weurope-001'
-param aksvnetName = 'vnet-spoke-staging-weurope-01'
-param vnetspokeRGName = 'rg-spoke-staging-weurope-01'
+param aksvnetName = 'vnet-aks-staging-weurope-01'
+param vnetspokeRGName = 'rg-aks-staging-weurope-01'
 param akssubnetName = 'AKS'
 param aksAppGatewayName = 'agw-staging-weurope-01'
 param rtAppGWSubnetName = 'rt-agw-staging-weurope-01'
@@ -46,16 +46,16 @@ param autoScalingProfile = {
 }
 param aksNetworkPlugin = 'azure'
 param aksNetworkPluginMode = 'overlay'
-param aksPodCidr = '172.50.0.0/16'
-param aksServiceCidr = '192.168.100.0/24'
-param aksDnsServiceIP = '192.168.100.10'
+param aksPodCidr = '10.121.0.0/16'
+param aksServiceCidr = '192.168.121.0/24'
+param aksDnsServiceIP = '192.168.121.10'
 param aksNetworkPolicy = 'azure'
 param aksOutboundType = 'userDefinedRouting'
 
-param aksSystemPoolVMSize = 'Standard_D4d_v4'
+param aksSystemPoolVMSize = 'Standard_D2as_v6'
 param aksSystemPoolNodesCount = 3
-param aksUserPoolVMSize = 'Standard_D4d_v4'
+param aksUserPoolVMSize = 'Standard_D2as_v6'
 param aksUserPoolNodesCount = 3
 
-param acrName = 'welkacraksdev001'
-param keyvaultName = 'kv-aks-staging-weurope-001'
+param acrName = 'rafedacrstg001'
+param keyvaultName = 'akv-aks-stg-weurope-001'

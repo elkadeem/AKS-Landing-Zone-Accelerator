@@ -20,15 +20,15 @@ az provider register --namespace Microsoft.OperationalInsights
 az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
 az feature register --namespace Microsoft.Compute --name EncryptionAtHost
 
-az provider show --namespace Microsoft.ContainerService
-az provider show --namespace Microsoft.OperationsManagement
-az provider show --namespace Microsoft.OperationalInsights
-az feature show --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
-az feature show --namespace Microsoft.Compute --name EncryptionAtHost
+az provider show --namespace Microsoft.ContainerService -o table
+az provider show --namespace Microsoft.OperationsManagement -o table
+az provider show --namespace Microsoft.OperationalInsights -o table
+az feature show --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider" -o table
+az feature show --namespace Microsoft.Compute --name EncryptionAtHost -o table
 
 
 # deploy aks supporting resources spoke subscription
-az deployment sub create --name 'dev-05-aks-deployment' --location $location --parameters  '.\05-AKS\main.bicepparam' 
+az deployment sub create --name 'staging-05-aks-deployment' --location $location --parameters  '.\05-AKS\main-staging.bicepparam' 
 
 # Delete all resources
 az group delete --name rg-aks-dev-uksouth-001   --yes

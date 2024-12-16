@@ -206,7 +206,7 @@ module aks '../modules/aks/privateaks.bicep' = {
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
         mode: 'User'
-        osDiskSizeGB: 30
+        osDiskSizeGB: 60
         vmSize: aksUserPoolVMSize
         type: 'VirtualMachineScaleSets'
         vnetSubnetID: akssubnet.id
