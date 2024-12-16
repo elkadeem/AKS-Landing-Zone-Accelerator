@@ -4,7 +4,6 @@ param location string = resourceGroup().location
 param aksIdentity object
 param aksSKU object
 
-
 param aksadminGroupObjectIDs array
 param enableAzurePolicy bool = true
 param enableOMSAgent bool = true
@@ -58,7 +57,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
     userAssignedIdentities: aksIdentity
   }
   sku: aksSKU
-  properties: {    
+  properties: {
     kubernetesVersion: kubernetesVersion
     nodeResourceGroup: aksInfrastractureRGName
     dnsPrefix: '${toLower(aksName)}aks'
@@ -77,8 +76,8 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
       serviceCidr: serviceCidr
       dnsServiceIP: dnsServiceIP
       networkPolicy: networkPolicy
-      loadBalancerProfile:{
-        backendPoolType: 'NodeIPConfiguration'                
+      loadBalancerProfile: {
+        backendPoolType: 'NodeIPConfiguration'
       }
       loadBalancerSku: 'standard'
     }
@@ -107,7 +106,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
         : {
             enabled: false
           }
-      azureKeyVaultSecretsProvider: {
+      azureKeyvaultSecretsProvider: {
         enabled: true
       }
     }
@@ -131,16 +130,19 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-09-01' = {
       webAppRouting: {
         enabled: enableWebRoutingAddOn
         dnsZoneResourceIds: enableWebRoutingAddOn && !empty(webRoutingAddOnDnsZoneResourceIds)
-          ? webRoutingAddOnDnsZoneResourceIds : null        
+          ? webRoutingAddOnDnsZoneResourceIds
+          : null
       }
-    }    
+    }
   }
 }
 
 output kubletetIdentity string = aks.properties.identityProfile.kubeletidentity.objectId
 output ingressIdentity string = enableIngressApplicationGateway
-? aks.properties.addonProfiles.ingressApplicationGateway.identity.objectId : ''
+  ? aks.properties.addonProfiles.ingressApplicationGateway.identity.objectId
+  : ''
 output keyVaultaddonIdentity string = aks.properties.addonProfiles.azureKeyVaultSecretsProvider.identity.objectId
 output oidcIdentity string = aks.properties.oidcIssuerProfile.issuerURL
 output webRoutingIdentity string = enableWebRoutingAddOn
-? aks.properties.ingressProfile.webAppRouting.identity.objectId : ''
+  ? aks.properties.ingressProfile.webAppRouting.identity.objectId
+  : ''
