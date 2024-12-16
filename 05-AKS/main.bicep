@@ -59,8 +59,12 @@ param aksNetworkPolicy string = 'calico'
 
 param aksSystemPoolVMSize string = 'Standard_D4d_v4'
 param aksSystemPoolNodesCount int = 3
+param aksSystemPoolNodeMin = 1
+param aksSystemPoolNodeMax=3
 param aksUserPoolVMSize string = 'Standard_D4d_v4'
 param aksUserPoolNodesCount int = 3
+param aksUserPoolNodeMin = 1
+param aksUserPoolNodeMax= 3
 
 
 param acrName string
@@ -79,7 +83,7 @@ param aksWebRoutingAddOnDnsZoneResourceIds array?
 param enableDnsZoneContributorRoleAssignment bool = false
 
 var aksInfrastractureRGName = 'rg-${aksClusterName}-${toLower(location)}-aksInfra'
-var akskubenetpodcidr = '172.17.0.0/24'
+var akskubenetpodcidr = '10.122.0.0/16'
 var ipdelimiters = [
   '.'
   '/'
@@ -189,8 +193,8 @@ module aks '../modules/aks/privateaks.bicep' = {
         count: aksSystemPoolNodesCount
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         enableAutoScaling: enableAutoScaling
-        minCount: enableAutoScaling ? 1 : null
-        maxCount: enableAutoScaling ? 3 : null
+        minCount: enableAutoScaling ? aksSystemPoolNodeMin : null
+        maxCount: enableAutoScaling ? aksSystemPoolNodeMax : null
         mode: 'System'
         osDiskSizeGB: 30
         vmSize: aksSystemPoolVMSize
@@ -203,8 +207,8 @@ module aks '../modules/aks/privateaks.bicep' = {
         count: aksUserPoolNodesCount
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         enableAutoScaling: enableAutoScaling
-        minCount: enableAutoScaling ? 1 : null
-        maxCount: enableAutoScaling ? 3 : null
+        minCount: enableAutoScaling ? aksUserPoolNodeMin : null
+        maxCount: enableAutoScaling ? aksUserPoolNodeMax : null
         mode: 'User'
         osDiskSizeGB: 60
         vmSize: aksUserPoolVMSize

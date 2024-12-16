@@ -1,0 +1,34 @@
+$appdevs='aks-prod-devs'
+$aksops='aks-prod-admins'
+
+# checking if Azure CLI is installed
+if (!(Get-Command az -ErrorAction SilentlyContinue)) {
+    Write-Host "Azure CLI not installed. Installation steps in: https://docs.microsoft.com/cli/azure/install-azure-cli"
+    exit 1
+} else {
+    az ad group create --display-name $appdevs --mail-nickname $appdevs
+    az ad group create --display-name $aksops --mail-nickname $aksops
+}
+
+# Copy group Ids to be used in the paramters files
+
+# deploy spoke network in spoke subscription
+$location = 'westeurope'
+az deployment sub create --name 'prod-aks-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-prod.bicepparam' 
+az deployment sub create --name 'prod-aks-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG-prod.bicepparam'
+
+
+# deploy aks supporting resources spoke subscription
+az deployment sub create --name 'prod-aks-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main-prod.bicepparam' 
+
+
+# deploy aks supporting resources spoke subscription
+az deployment sub create --name 'prod-aks-05-aks-deployment' --location $location --parameters  '.\05-AKS\main-prod.bicepparam' 
+
+# Delete all resources
+az group delete --name rg-aks-dev-uksouth-001   --yes
+az group delete --name rg-spoke-dev-uksouth-01  --yes
+az deployment sub delete --name 'prod-aks-03-network-spoke' 
+az deployment sub delete --name 'prod-aks-network-spoke-updateUDR' 
+az deployment sub delete --name 'prod-aks-04-aks-supporting' 
+az deployment sub delete --name 'prod-aks-04-aks-supporting' 
