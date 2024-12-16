@@ -1,5 +1,5 @@
-$appdevs='aks-demo-devs'
-$aksops='aks-demo-admins'
+$appdevs='aks-staging-devs'
+$aksops='aks-staging-admins'
 
 # checking if Azure CLI is installed
 if (!(Get-Command az -ErrorAction SilentlyContinue)) {

@@ -1,17 +1,16 @@
-# Deploy spoke network in hub subscription
-#$location = 'westeurope'
-#az deployment sub create --name 'dev-02-network-hub' --location $location ` --parameters  '.\02-Network-Hub\main.bicepparam'
-# az deployment sub create --name 'dev-02-network-updateUDR' --location $location --parameters  .\02-Network-Hub\updateUDR.bicepparam --subscription $hubSubscriptionId
-# az deployment sub create --name 'dev-02-network-vm' --location $location --parameters  .\02-Network-Hub\deploy-vm.bicepparam --subscription $hubSubscriptionId
+$appdevs='aks-staging-devs'
+$aksops='aks-staging-admins'
 
-# deploy spoke network in spoke subscription
-$location = 'westeurope'
-az deployment sub create --name 'staging-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-staging.bicepparam' 
-az deployment sub create --name 'dev-03-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG.bicepparam'
+# checking if Azure CLI is installed
+if (!(Get-Command az -ErrorAction SilentlyContinue)) {
+    Write-Host "Azure CLI not installed. Installation steps in: https://docs.microsoft.com/cli/azure/install-azure-cli"
+    exit 1
+} else {
+    az ad group create --display-name $appdevs --mail-nickname $appdevs
+    az ad group create --display-name $aksops --mail-nickname $aksops
+}
 
-
-# deploy aks supporting resources spoke subscription
-az deployment sub create --name 'dev-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main-dev.bicepparam' --subscription $aksSubscriptionId
+# Copy group Ids to be used in the paramters files
 
 # Enable providers
 az provider register --namespace Microsoft.ContainerService
@@ -20,27 +19,29 @@ az provider register --namespace Microsoft.OperationalInsights
 az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
 az feature register --namespace Microsoft.Compute --name EncryptionAtHost
 
-az provider show --namespace Microsoft.ContainerService
-az provider show --namespace Microsoft.OperationsManagement
-az provider show --namespace Microsoft.OperationalInsights
-az feature show --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
-az feature show --namespace Microsoft.Compute --name EncryptionAtHost
+az provider show --namespace Microsoft.ContainerService -o table
+az provider show --namespace Microsoft.OperationsManagement -o table
+az provider show --namespace Microsoft.OperationalInsights -o table
+az feature show --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider" -o table
+az feature show --namespace Microsoft.Compute --name EncryptionAtHost -o table
+
+# deploy spoke network in spoke subscription
+$location = 'westeurope'
+az deployment sub create --name 'staging-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-staging.bicepparam' 
+az deployment sub create --name 'staging-03-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG-staging.bicepparam'
 
 
 # deploy aks supporting resources spoke subscription
-az deployment sub create --name 'dev-05-aks-deployment' --location $location --parameters  '.\05-AKS\main.bicepparam' --subscription $aksSubscriptionId
+az deployment sub create --name 'staging-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main-staging.bicepparam' 
+
+
+# deploy aks supporting resources spoke subscription
+az deployment sub create --name 'staging-05-aks-deployment' --location $location --parameters  '.\05-AKS\main-staging.bicepparam' 
 
 # Delete all resources
-az group delete --name rg-aks-dev-uksouth-001  --subscription $aksSubscriptionId --yes
-az group delete --name rg-spoke-dev-uksouth-01 --subscription $aksSubscriptionId --yes
-az group delete --name rg-hub-dev-uksouth-01 --subscription $hubSubscriptionId --yes
+#az group delete --name rg-aks-staging-weurope-01  --yes
 
-
-az deployment sub delete --name 'dev-02-network-hub' --subscription $hubSubscriptionId
-az deployment sub delete --name 'dev-02-network-updateUDR' --subscription $hubSubscriptionId
-az deployment sub delete --name 'dev-02-network-vm' --subscription $hubSubscriptionId
-
-az deployment sub delete --name 'dev-03-network-spoke' --subscription $aksSubscriptionId
-az deployment sub delete --name 'dev-03-network-spoke-updateUDR' --subscription $aksSubscriptionId
-az deployment sub delete --name 'dev-04-aks-supporting' --subscription $aksSubscriptionId
-az deployment sub delete --name 'dev-05-aks-deployment' --subscription $aksSubscriptionId
+#az deployment sub delete --name 'staging-03-network-spoke' 
+#az deployment sub delete --name 'staging-03-network-spoke-updateUDR' 
+#az deployment sub delete --name 'staging-03-network-spoke-updateUDR' 
+#az deployment sub delete --name 'staging-03-network-spoke-updateUDR' 
