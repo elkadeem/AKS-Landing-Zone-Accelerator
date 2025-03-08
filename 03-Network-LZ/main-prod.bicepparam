@@ -42,11 +42,11 @@ param vnetSpokeSubnets = [
 //}
 param nsgAKSName = 'nsg-aks-prod-weurope-01'
 param rtAKSSubnetname = 'rt-aks-prod-weurope-01'
-param firewallIP = '10.10.50.4'
+param firewallIP = ''
 
-param hubSubscriptionId = 'e7fe8544-3beb-41e8-b5ea-3bb0de3f7f69'
-param hubResourceGroupName = 'TTCDR-Migrated'
-param hubVnetName = 'TTCDR'
+param hubSubscriptionId = ''
+param hubResourceGroupName = ''
+param hubVnetName = ''
 
 
 param appgwpipName = 'pip-agw-prod-weurope-01'
@@ -67,5 +67,5 @@ param nsgappgwName = 'nsg-agw-prod-weurope-01'
 param appgwroutetableName = 'rt-agw-prod-weurope-01'
 
 param dnsZonesrgName = 'rg-private-dns-zones'
-param dnsZonesresourceGroupSubscriptionId = 'e7fe8544-3beb-41e8-b5ea-3bb0de3f7f69'
+param dnsZonesresourceGroupSubscriptionId = ''
 
