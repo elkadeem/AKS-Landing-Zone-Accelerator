@@ -4,16 +4,23 @@ param rgName string
 param vnetHubName string
 param hubVnetAddressPrefixes array
 param hubSubnets array
+// Policy parameters
+param firewallPolicyName string
+param threatIntelMode string 
+param firewallPolicySku object
+param applicationRuleCollectionName string
+param applicationRuleCollectionPriority int
+param applicationsRuleCollections array
+param networkRuleCollectionName string
+param networkRuleCollectionPriority int
+param networksRuleCollections array
 param azfwName string
 param rtVMSubnetname string
-param fwApplicationRuleCollections array
-param fwNetworkRuleCollections array
-param fwNatRuleCollections array
 param location string = deployment().location
 param availabilityZones array
 
-
-module rg  'modules/resource-group/rg.bicep' = {
+// Create a resource group
+module rg '../modules/resource-group/rg.bicep' = {
   name: rgName
   params: {
     location: location
@@ -21,7 +28,8 @@ module rg  'modules/resource-group/rg.bicep' = {
   }
 }
 
-module vnetHub 'modules/vnet/vnet.bicep' = {
+// Create a virtual network
+module vnetHub '../modules/vnet/vnet.bicep' = {
   scope: resourceGroup(rg.name)
   name: vnetHubName
   params: {
@@ -32,12 +40,10 @@ module vnetHub 'modules/vnet/vnet.bicep' = {
     }
     subnets: hubSubnets
   }
-  dependsOn: [
-    rg
-  ]
 }
 
-module publicipfw 'modules/vnet/publicip.bicep' = {
+// Create a public IP address for the Azure Firewall
+module publicipfw '../modules/vnet/publicip.bicep' = {
   scope: resourceGroup(rg.name)
   name: '${azfwName}-pip'
   params: {
@@ -51,13 +57,10 @@ module publicipfw 'modules/vnet/publicip.bicep' = {
       tier: 'Regional'
     }
   }
-  dependsOn: [
-    rg
-  ]
 }
 
-
-module publicipfwmanagement 'modules/vnet/publicip.bicep' = {
+// Create a public IP address for the Azure Firewall management
+module publicipfwmanagement '../modules/vnet/publicip.bicep' = {
   scope: resourceGroup(rg.name)
   name: '${azfwName}-pip-management'
   params: {
@@ -71,29 +74,64 @@ module publicipfwmanagement 'modules/vnet/publicip.bicep' = {
       tier: 'Regional'
     }
   }
-  dependsOn: [
-    rg
-  ]
 }
 
-
-resource subnetFw 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+// Get the subnets for the Azure Firewall
+resource subnetFw 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
   scope: resourceGroup(rgName)
   name: '${vnetHub.name}/AzureFirewallSubnet'  
 }
 
-resource subnetFwManagement 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+// Get the subnets for the Azure Firewall management
+resource subnetFwManagement 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
   scope: resourceGroup(rgName)
   name: '${vnetHub.name}/AzureFirewallManagementSubnet'
 }
 
-module azfirewall 'modules/vnet/firewall.bicep' = {
+// Create firewall Policy
+module firewallPolicy '../modules/vnet/firewallpolicy.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: firewallPolicyName
+  params: {
+    firewallPolicyName: firewallPolicyName
+    location: location
+    firewallPolicySku: firewallPolicySku
+    threatIntelMode: threatIntelMode
+  }
+}
+
+// Create firewall rule collection group
+module ruleCollectionApplicationRules '../modules/vnet/firewallRuleCollectionGroup.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: applicationRuleCollectionName
+  params: {
+    firewallPolicyName: firewallPolicy.name
+    ruleCollectionGroupName: applicationRuleCollectionName
+    Priority: applicationRuleCollectionPriority
+    ruleCollections: applicationsRuleCollections
+  }
+}
+
+// Create firewall rule collection group
+module ruleCollectionNetworkRules '../modules/vnet/firewallRuleCollectionGroup.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: networkRuleCollectionName
+  params: {
+    firewallPolicyName: firewallPolicy.name
+    ruleCollectionGroupName: networkRuleCollectionName
+    Priority: networkRuleCollectionPriority
+    ruleCollections: networksRuleCollections
+  }
+}
+
+module azfirewall '../modules/vnet/firewall.bicep' = {
   scope: resourceGroup(rg.name)
   name: azfwName
   params: {
     availabilityZones: availabilityZones
     location: location 
     fwname: azfwName
+    firewallPolicyId: firewallPolicy.outputs.firewallPolicyId
     fwipConfigurations: [
       {
         name: 'AZFW-PIP'
@@ -105,8 +143,8 @@ module azfirewall 'modules/vnet/firewall.bicep' = {
             id: publicipfw.outputs.publicipId
           }
         }
-      }      
-    ]
+      }  
+    ]        
     fwipManagementConfigurations: {
       name: 'AZFW-PIP-Management'
       properties: {
@@ -118,20 +156,15 @@ module azfirewall 'modules/vnet/firewall.bicep' = {
         }
       }
     }
-    fwapplicationRuleCollections: fwApplicationRuleCollections
-    fwnetworkRuleCollections: fwNetworkRuleCollections
-    fwnatRuleCollections: fwNatRuleCollections
   }
-  dependsOn: [
-    rg
-    vnetHub
-    publicipfw
-    publicipfwmanagement  
-  ]
+  dependsOn: [          
+      ruleCollectionApplicationRules
+      ruleCollectionNetworkRules
+    ]
 }
 
 
-module publicipbastion 'modules/vnet/publicip.bicep' = {
+module publicipbastion '../modules/vnet/publicip.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'publicip-bastion'
   params: {    
@@ -145,17 +178,14 @@ module publicipbastion 'modules/vnet/publicip.bicep' = {
       tier: 'Regional'
     }
   }
-  dependsOn: [
-    rg
-  ]
 }
 
-resource subnetbastion 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource subnetbastion 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
   scope: resourceGroup(rg.name)
   name: '${vnetHub.name}/AzureBastionSubnet'  
 }
 
-module bastion 'modules/vm/bastion.bicep' = {
+module bastion '../modules/vm/bastion.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'bastion'
   params: {
@@ -164,26 +194,18 @@ module bastion 'modules/vm/bastion.bicep' = {
     subnetId: subnetbastion.id
     bastionipId: publicipbastion.outputs.publicipId   
   }
-  dependsOn: [
-    rg
-    vnetHub
-    publicipbastion
-  ]
 }
 
-module routetable 'modules/vnet/routetable.bicep' = {
+module routetable '../modules/vnet/routetable.bicep' = {
   scope: resourceGroup(rg.name)
   name: rtVMSubnetname
   params: {
     location: location
     rtName: rtVMSubnetname    
   }
-  dependsOn: [
-    rg
-  ]
 }
 
-module routetableroutes 'modules/vnet/routetableroutes.bicep' = {
+module routetableroutes '../modules/vnet/routetableroutes.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'vm-to-internet-routes'
   params: {

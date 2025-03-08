@@ -2,49 +2,53 @@ using './main.bicep'
 
 param rgName = 'rg-spoke-dev-uksouth-01'
 param vnteSpokeName = 'vnet-spoke-dev-uksouth-01'
-param vnetSpokeAddressPrefixes = ['10.1.0.0/16']
+param vnetSpokeAddressPrefixes = ['172.17.0.0/16']
 param vnetSpokeSubnets = [
   {
-    name: 'default'
+    name: 'vmsubnet'
     properties: {
-      addressPrefix: '10.1.0.0/24'
+      addressPrefix: '172.17.0.0/24'
     }
   }
   {
     name: 'AKS'
     properties: {
-      addressPrefix: '10.1.1.0/24'
+      addressPrefix: '172.17.1.0/24'
     }
   }  
   {
-    name: 'AppGWSubnet'
+    name: 'datasubnet'
     properties: {
-      addressPrefix: '10.1.2.0/24'
+      addressPrefix: '172.17.2.0/24'
     }
   }
   {
-    name: 'vmsubnet'
+    name: 'AppGWSubnet'
     properties: {
-      addressPrefix: '10.1.3.0/24'
+      addressPrefix: '172.17.3.0/24'
     }
-  }
+  }  
   {
     name: 'servicespe'
     properties: {
-      addressPrefix: '10.1.4.0/24'
+      addressPrefix: '172.17.4.0/24'
       privateEndpointNetworkPolicies: 'Disabled'
     }
   }
 ]
+
 //param dhcpOptions = {
   // dnsServers: ['10.0.1.4'] // firewall private IP address if it is DNS server
 //}
 param nsgAKSName = 'nsg-aks-dev-uksouth-01'
 param rtAKSSubnetname = 'rt-aks-dev-uksouth-01'
 param firewallIP = '10.0.1.4'
-param hubVnetName = 'vnet-hub-dev-uksouth-01'
-param hubSubscriptionId = 'bdccbf09-3420-4294-bd61-735b286edbbd'
+
+param hubSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
 param hubResourceGroupName = 'rg-hub-dev-uksouth-01'
+param hubVnetName = 'vnet-hub-dev-uksouth-01'
+
+
 param appgwpipName = 'pip-agw-dev-uksouth-01'
 param appgwsubnetName = 'AppGWSubnet'
 param appgwName = 'agw-dev-uksouth-01'
@@ -56,6 +60,5 @@ param appgwAutoScale = {
 param nsgappgwName = 'nsg-agw-dev-uksouth-01'
 param appgwroutetableName = 'rt-agw-dev-uksouth-01'
 
-param dnsZonesrgName = 'bdccbf09-3420-4294-bd61-735b286edbbd'
-param dnsZonesresourceGroupSubscriptionId = 'rg-private-dns-zones'
-
+param dnsZonesrgName = 'rg-private-dns-zones'
+param dnsZonesresourceGroupSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'

@@ -1,27 +1,27 @@
 using './main.bicep'
 
-param rgName = 'rg-aks-dev-uksouth-001'
-param location = 'uksouth'
+param rgName = 'rg-aks-staging-weurope-01'
+param location = 'westeurope'
 param aksIdentityName = 'aksdevIdentity'
 param privateDNSZoneAKSName = ''
-param privateDNSZoneAKSNameSubscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
+param privateDNSZoneAKSNameSubscriptionId = ''
 param privateDNSZoneAKSNameResourceGroup = 'rg-private-dns-zones'
-param akslaworkspaceName = 'log-dev-uksouth-001'
-param aksvnetName = 'vnet-spoke-dev-uksouth-01'
-param vnetspokeRGName = 'rg-spoke-dev-uksouth-01'
+param akslaworkspaceName = 'log-staging-weurope-001'
+param aksvnetName = 'vnet-aks-staging-weurope-01'
+param vnetspokeRGName = 'rg-aks-staging-weurope-01'
 param akssubnetName = 'AKS'
-param aksAppGatewayName = 'agw-dev-uksouth-01'
-param rtAppGWSubnetName = 'AppGWSubnet'
-param rtaksName = 'rt-aks-dev-uksouth-01'
-param aksClusterName = 'aks-dev-uksouth-001'
-param kubernetesVersion = '1.28.9'
+param aksAppGatewayName = 'agw-staging-weurope-01'
+param rtAppGWSubnetName = 'rt-agw-staging-weurope-01'
+param rtaksName = 'rt-aks-staging-weurope-01'
+param aksClusterName = 'aks-staging-weurope-001'
+param kubernetesVersion = '1.30.6'
 param skuName = 'Base'
 param skuTier = 'Standard'
-param aksadminGroupaccessprincipalId = '0a2a105e-d84a-4af3-9413-7c1b2a8b83ae'
-param aksusersgroupaccessprincipalId = '2aa14dab-4397-4d66-9c19-a497be431638'
+param aksadminGroupaccessprincipalId = ''
+param aksusersgroupaccessprincipalId = ''
 param enableAzurePolicy = true
 param enableOMSAgent = true
-param enableIngressApplicationGateway = true
+param enableIngressApplicationGateway = false
 param availabilityZones = []
 param enableAutoScaling = true
 param enableWorkloadIdentity = true
@@ -46,16 +46,16 @@ param autoScalingProfile = {
 }
 param aksNetworkPlugin = 'azure'
 param aksNetworkPluginMode = 'overlay'
-param aksPodCidr = '172.50.0.0/16'
-param aksServiceCidr = '192.168.100.0/24'
-param aksDnsServiceIP = '192.168.100.10'
-param aksNetworkPolicy = 'calico'
-param aksOutboundType = 'loadBalancer'
+param aksPodCidr = '10.121.0.0/16'
+param aksServiceCidr = '192.168.121.0/24'
+param aksDnsServiceIP = '192.168.121.10'
+param aksNetworkPolicy = 'azure'
+param aksOutboundType = 'userDefinedRouting'
 
-param aksSystemPoolVMSize = 'Standard_D4d_v4'
+param aksSystemPoolVMSize = 'Standard_D2as_v6'
 param aksSystemPoolNodesCount = 3
-param aksUserPoolVMSize = 'Standard_D4d_v4'
+param aksUserPoolVMSize = 'Standard_D2as_v6'
 param aksUserPoolNodesCount = 3
 
-param acrName = 'welkacraksdev001'
-param keyvaultName = 'kv-aks-dev-uksouth-003'
+param acrName = ''
+param keyvaultName = 'akv-aks-stg-weurope-001'

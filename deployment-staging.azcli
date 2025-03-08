@@ -1,0 +1,47 @@
+$appdevs='aks-staging-devs'
+$aksops='aks-staging-admins'
+
+# checking if Azure CLI is installed
+if (!(Get-Command az -ErrorAction SilentlyContinue)) {
+    Write-Host "Azure CLI not installed. Installation steps in: https://docs.microsoft.com/cli/azure/install-azure-cli"
+    exit 1
+} else {
+    az ad group create --display-name $appdevs --mail-nickname $appdevs
+    az ad group create --display-name $aksops --mail-nickname $aksops
+}
+
+# Copy group Ids to be used in the paramters files
+
+# Enable providers
+az provider register --namespace Microsoft.ContainerService
+az provider register --namespace Microsoft.OperationsManagement
+az provider register --namespace Microsoft.OperationalInsights
+az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
+az feature register --namespace Microsoft.Compute --name EncryptionAtHost
+
+az provider show --namespace Microsoft.ContainerService -o table
+az provider show --namespace Microsoft.OperationsManagement -o table
+az provider show --namespace Microsoft.OperationalInsights -o table
+az feature show --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider" -o table
+az feature show --namespace Microsoft.Compute --name EncryptionAtHost -o table
+
+# deploy spoke network in spoke subscription
+$location = 'westeurope'
+az deployment sub create --name 'staging-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-staging.bicepparam' 
+az deployment sub create --name 'staging-03-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG-staging.bicepparam'
+
+
+# deploy aks supporting resources spoke subscription
+az deployment sub create --name 'staging-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main-staging.bicepparam' 
+
+
+# deploy aks supporting resources spoke subscription
+az deployment sub create --name 'staging-05-aks-deployment' --location $location --parameters  '.\05-AKS\main-staging.bicepparam' 
+
+# Delete all resources
+#az group delete --name rg-aks-staging-weurope-01  --yes
+
+#az deployment sub delete --name 'staging-03-network-spoke' 
+#az deployment sub delete --name 'staging-03-network-spoke-updateUDR' 
+#az deployment sub delete --name 'staging-03-network-spoke-updateUDR' 
+#az deployment sub delete --name 'staging-03-network-spoke-updateUDR' 

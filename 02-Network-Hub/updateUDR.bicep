@@ -15,7 +15,7 @@ resource rtVM 'Microsoft.Network/routeTables@2023-11-01' existing ={
   name: rtVMSubnetName
 }
 
-module updateUDR 'modules/vnet/subnet.bicep' = {
+module updateUDR '../modules/vnet/subnet.bicep' = {
   scope: resourceGroup(rgName)
   name: 'updateUDR'
   params: {

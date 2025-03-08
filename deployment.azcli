@@ -4,6 +4,7 @@ az provider register --namespace Microsoft.OperationsManagement
 az provider register --namespace Microsoft.OperationalInsights
 az feature register --namespace "Microsoft.ContainerService" --name "AKS-AzureKeyVaultSecretsProvider"
 az feature register --namespace Microsoft.Compute --name EncryptionAtHost
+az feature register --namespace "Microsoft.ContainerService" --name "EnableSLBSharedHealthProbePreview"
 
 az provider show --namespace Microsoft.ContainerService
 az provider show --namespace Microsoft.OperationsManagement
@@ -13,22 +14,28 @@ az feature show --namespace Microsoft.Compute --name EncryptionAtHost
 
 # Deploy spoke network in hub subscription
 $location = 'uksouth'
-$hubSubscriptionId = 'bdccbf09-3420-4294-bd61-735b286edbbd'
-$aksSubscriptionId = '7c22d273-6ab6-4aa8-802e-e7a993cb2eae'
-az deployment sub create --name 'dev-02-network-hub' --location $location ` --parameters  '.\02-Network-Hub\main.bicepparam' --subscription $hubSubscriptionId
-az deployment sub create --name 'dev-02-network-updateUDR' --location $location --parameters  .\02-Network-Hub\updateUDR.bicepparam --subscription $hubSubscriptionId
+$hubSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
+#$aksSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
+az deployment sub create --name 'dev-02-network-hub' --location $location ` --parameters  '.\02-Network-Hub\main-dev.bicepparam' --subscription $hubSubscriptionId
+#az deployment sub create --name 'dev-02-network-updateUDR' --location $location --parameters  .\02-Network-Hub\updateUDR.bicepparam --subscription $hubSubscriptionId
 #az deployment sub create --name 'dev-02-network-vm' --location $location --parameters  .\02-Network-Hub\deploy-vm.bicepparam --subscription $hubSubscriptionId
 
+# Deploy DNS Zones if there is no Azure Landing zone with needed zones
+$location = 'uksouth'
+az deployment sub create --name 'dev-aks-03-private-dns-zones' --location $location --parameters  '.\03-0-DNSZones\main.bicepparam' --subscription $aksSubscriptionId
+
 # deploy spoke network in spoke subscription
-az deployment sub create --name 'dev-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main.bicepparam' --subscription $aksSubscriptionId
-az deployment sub create --name 'dev-03-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG.bicepparam' --subscription $aksSubscriptionId
+$location = 'uksouth'
+$aksSubscriptionId = 'd9d9fded-74d5-4968-85b0-13b4a37711c7'
+az deployment sub create --name 'dev-aks-03-network-spoke' --location $location --parameters  '.\03-Network-LZ\main-dev.bicepparam' --subscription $aksSubscriptionId
+az deployment sub create --name 'dev-aks-03-network-spoke-updateUDR' --location $location --parameters  '.\03-Network-LZ\updateUDR-NSG.bicepparam' --subscription $aksSubscriptionId
 
 
 # deploy aks supporting resources spoke subscription
-az deployment sub create --name 'dev-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main.bicepparam' --subscription $aksSubscriptionId
+az deployment sub create --name 'dev-aks-04-aks-supporting' --location $location --parameters  '.\04-AKS-Supporting\main-dev.bicepparam' --subscription $aksSubscriptionId
 
 # deploy aks supporting resources spoke subscription
-az deployment sub create --name 'dev-05-aks-deployment' --location $location --parameters  '.\05-AKS\main.bicepparam' --subscription $aksSubscriptionId
+az deployment sub create --name 'dev-aks-05-aks-deployment' --location $location --parameters  '.\05-AKS\main-dev.bicepparam' --subscription $aksSubscriptionId
 
 # Delete all resources
 az group delete --name rg-aks-dev-uksouth-001  --subscription $aksSubscriptionId --yes
@@ -44,3 +51,5 @@ az deployment sub delete --name 'dev-03-network-spoke' --subscription $aksSubscr
 az deployment sub delete --name 'dev-03-network-spoke-updateUDR' --subscription $aksSubscriptionId
 az deployment sub delete --name 'dev-04-aks-supporting' --subscription $aksSubscriptionId
 az deployment sub delete --name 'dev-05-aks-deployment' --subscription $aksSubscriptionId
+
+ # $ENV:AZURE_CLI_DISABLE_CONNECTION_VERIFICATION='true'

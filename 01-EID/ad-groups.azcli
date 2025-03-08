@@ -1,5 +1,5 @@
-$appdevs='aks-demo-devs'
-$aksops='aks-demo-admins'
+$appdevs='aks-staging-devs'
+$aksops='aks-staging-admins'
 
 # checking if Azure CLI is installed
 if (!(Get-Command az -ErrorAction SilentlyContinue)) {
@@ -9,4 +9,3 @@ if (!(Get-Command az -ErrorAction SilentlyContinue)) {
     az ad group create --display-name $appdevs --mail-nickname $appdevs
     az ad group create --display-name $aksops --mail-nickname $aksops
 }
-

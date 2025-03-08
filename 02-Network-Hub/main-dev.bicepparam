@@ -1,5 +1,7 @@
 using './main.bicep'
 
+var aksSubnetPrefix = '172.17.1.0/24'
+
 param rgName = 'rg-hub-dev-uksouth-01'
 param vnetHubName = 'vnet-hub-dev-uksouth-01'
 param hubVnetAddressPrefixes = [
@@ -38,7 +40,7 @@ param hubSubnets = [
   }
 ]
 
-param firewallPolicyName = 'firewallPolicy'
+param firewallPolicyName = 'afwp-hub-uksouth-01'
 param threatIntelMode = 'Deny'
 param firewallPolicySku = {
   tier: 'Standard'
@@ -82,7 +84,7 @@ param applicationsRuleCollections = [
             targetUrls: []
             terminateTLS: false
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             destinationAddresses: []
             sourceIpGroups: []
@@ -140,7 +142,7 @@ param applicationsRuleCollections = [
             targetUrls: []
             terminateTLS: false
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             destinationAddresses: []
             sourceIpGroups: []
@@ -165,11 +167,13 @@ param applicationsRuleCollections = [
               '*.quay.io'
               '*.cloudfront.net'
               'production.cloudflare.docker.com'
+              'ghcr.io'
+              'pkg-containers.githubusercontent.com'
             ]
             targetUrls: []
             terminateTLS: false
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             destinationAddresses: []
             sourceIpGroups: []
@@ -200,7 +204,7 @@ param applicationsRuleCollections = [
             targetUrls: []
             terminateTLS: false
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             destinationAddresses: []
             sourceIpGroups: []
@@ -227,7 +231,7 @@ param applicationsRuleCollections = [
             targetUrls: []
             terminateTLS: false
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             destinationAddresses: []
             sourceIpGroups: []
@@ -253,7 +257,7 @@ param networksRuleCollections = [
               'UDP'
             ]
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             sourceIpGroups: []
             destinationAddresses: [
@@ -272,7 +276,7 @@ param networksRuleCollections = [
               'TCP'
             ]
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             sourceIpGroups: []
             destinationAddresses: [
@@ -291,7 +295,7 @@ param networksRuleCollections = [
               'UDP'
             ]
             sourceAddresses: [
-              '10.1.1.0/24'
+              aksSubnetPrefix
             ]
             sourceIpGroups: []
             destinationAddresses: [

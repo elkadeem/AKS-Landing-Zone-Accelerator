@@ -10,12 +10,12 @@ param nsgAppGWName string
 param rtAppGWSubnetName string
 
 
-resource subnetAKS 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource subnetAKS 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
   scope: resourceGroup(rgName)
   name: '${spokeVnetName}/${aksVNetSubnetName}'
 }
 
-resource rtVM 'Microsoft.Network/routeTables@2023-11-01' existing ={
+resource rtVM 'Microsoft.Network/routeTables@2024-05-01' existing ={
   scope: resourceGroup(rgName)
   name: rtAKSSubnetName
 }
@@ -26,7 +26,7 @@ resource nsgaks 'Microsoft.Network/networkSecurityGroups@2023-11-01' existing = 
 }
 
 
-module updateUDR 'modules/vnet/subnet.bicep' = {
+module updateUDR '../modules/vnet/subnet.bicep' = {
   scope: resourceGroup(rgName)
   name: 'updateUDR'
   params: {
@@ -42,8 +42,7 @@ module updateUDR 'modules/vnet/subnet.bicep' = {
       }
     }
   }
-  dependsOn: [
-    subnetAKS
+  dependsOn: [    
     nsgaks
     rtVM
   ]
@@ -59,12 +58,12 @@ resource nsgAppGW 'Microsoft.Network/networkSecurityGroups@2023-11-01' existing 
   name: nsgAppGWName
 }
 
-resource rtAppGW 'Microsoft.Network/routeTables@2023-11-01' existing ={
+resource rtAppGW 'Microsoft.Network/routeTables@2024-05-01' existing ={
   scope: resourceGroup(rgName)
   name: rtAppGWSubnetName
 }
 
-module updateNSGUDRAPPGW 'modules/vnet/subnet.bicep' = {
+module updateNSGUDRAPPGW '../modules/vnet/subnet.bicep' = {
   scope: resourceGroup(rgName)
   name: 'updateNSGAPPGW'
   params: {
@@ -82,7 +81,6 @@ module updateNSGUDRAPPGW 'modules/vnet/subnet.bicep' = {
   }
   dependsOn: [
     nsgAppGW
-    rtAppGW
-    subnetAPPGW
+    rtAppGW    
   ]
 }

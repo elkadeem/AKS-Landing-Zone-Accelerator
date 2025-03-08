@@ -1,5 +1,6 @@
 targetScope = 'subscription'
 
+
 param rgName string
 param location string = deployment().location
 param aksIdentityName string
@@ -16,10 +17,22 @@ param rtaksName string
 
 param aksClusterName string
 param kubernetesVersion string
-param aksSKU object = {
-  name: 'Base'
-  tier: 'Free'
-}
+@description('Optional. Name of a managed cluster SKU.')
+@allowed([
+  'Base'
+  'Automatic'
+])
+
+param skuName string = 'Base'
+
+@description('Optional. Tier of a managed cluster SKU.')
+@allowed([
+  'Free'
+  'Premium'
+  'Standard'
+])
+
+param skuTier string = 'Standard'
 param aksadminGroupaccessprincipalId string
 param aksusersgroupaccessprincipalId string
 param enableAzurePolicy bool = true
@@ -33,13 +46,44 @@ param autoScalingProfile object
   'azure'
   'kubenet'
 ])
-param networkPlugin string = 'azure'
+param aksNetworkPlugin string = 'azure'
+@description('Optional. Network plugin mode used for building the Kubernetes network. Not compatible with kubenet network plugin.')
+@allowed([
+  'overlay'
+])
+param aksNetworkPluginMode string?
+param aksPodCidr string?
+param aksServiceCidr string
+param aksDnsServiceIP string
+param aksNetworkPolicy string = 'calico'
+
+param aksSystemPoolVMSize string = 'Standard_D4d_v4'
+param aksSystemPoolNodesCount int = 3
+param aksSystemPoolNodeMin int = 1
+param aksSystemPoolNodeMax int =3
+param aksUserPoolVMSize string = 'Standard_D4d_v4'
+param aksUserPoolNodesCount int = 3
+param aksUserPoolNodeMin int = 1
+param aksUserPoolNodeMax int = 3
+
 
 param acrName string
 param keyvaultName string
 
+@description('Optional. Specifies outbound (egress) routing method.')
+@allowed([
+  'loadBalancer'
+  'userDefinedRouting'
+  'managedNATGateway'
+  'userAssignedNATGateway'
+])
+param aksOutboundType string = 'loadBalancer'
+param aksEnableWebRoutingAddOn bool = true
+param aksWebRoutingAddOnDnsZoneResourceIds array?
+param enableDnsZoneContributorRoleAssignment bool = false
+
 var aksInfrastractureRGName = 'rg-${aksClusterName}-${toLower(location)}-aksInfra'
-var akskubenetpodcidr = '172.17.0.0/24'
+var akskubenetpodcidr = '10.122.0.0/16'
 var ipdelimiters = [
   '.'
   '/'
@@ -54,7 +98,7 @@ var privateDNSZoneAKSSuffixes = {
 
 var aksprivateDNSZone = !empty(privateDNSZoneAKSName)? privateDNSZoneAKSName : 'privatelink.${toLower(location)}${privateDNSZoneAKSSuffixes[environment().name]}'
 
-module rg 'modules/resource-group/rg.bicep' = {
+module rg '../modules/resource-group/rg.bicep' = {
   name: rgName
   params: {
     rgName: rgName
@@ -67,7 +111,7 @@ resource aksIdentity  'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-
   name: aksIdentityName
 }
 
-module aksPodIdentityRole 'modules/Identity/role.bicep' = {
+module aksPodIdentityRole '../modules/Identity/role.bicep' = {
   name: 'aksPodIdentityRole'
   scope: resourceGroup(rg.name)
   params: {
@@ -82,7 +126,7 @@ resource privatednsAKSZone 'Microsoft.Network/privateDnsZones@2020-06-01' existi
   name: aksprivateDNSZone
 }
 
-module aksPolicy 'modules/policy/policy.bicep' = {
+module aksPolicy '../modules/policy/policy.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aksPolicy'  
   params: {
@@ -90,7 +134,7 @@ module aksPolicy 'modules/policy/policy.bicep' = {
   }
 }
 
-module akslaworkspace 'modules/laworkspace/la.bicep' = {
+module akslaworkspace '../modules/laworkspace/la.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aksworkspace'
   params: {
@@ -99,23 +143,22 @@ module akslaworkspace 'modules/laworkspace/la.bicep' = {
   }
 }
 
-resource akssubnet 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' existing = {
+resource akssubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
   scope: resourceGroup(vnetspokeRGName)
   name: '${aksvnetName}/${akssubnetName}'
 }
 
-resource appGateway 'Microsoft.Network/applicationGateways@2023-11-01' existing = {
+resource appGateway 'Microsoft.Network/applicationGateways@2024-05-01' existing = if (enableIngressApplicationGateway) {
   scope: resourceGroup(vnetspokeRGName)
   name: aksAppGatewayName
 }
 
-module aks 'modules/aks/privateaks.bicep' = {
+module aks '../modules/aks/privateaks.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aks-cluster'
   params: {
     autoScalingProfile: autoScalingProfile
     enableAutoScaling: enableAutoScaling
-    availabilityZones: availabilityZones
     aksInfrastractureRGName: aksInfrastractureRGName
     location: location
     aksadminGroupObjectIDs: [
@@ -123,33 +166,71 @@ module aks 'modules/aks/privateaks.bicep' = {
     ]
     aksName: aksClusterName
     kubernetesVersion: kubernetesVersion
-    networkPlugin: networkPlugin
+    networkPlugin: aksNetworkPlugin
+    networkPluginMode:  aksNetworkPluginMode
+    podCidr: aksPodCidr
+    serviceCidr: aksServiceCidr
+    dnsServiceIP: aksDnsServiceIP
+    networkPolicy: aksNetworkPolicy
+    outboundType: aksOutboundType
     logAnalyticsWorkspaceResourceID: akslaworkspace.outputs.laworkspaceId
-    aksPrivateDNSZone: privatednsAKSZone.id
-    aksSubnetId: akssubnet.id
-    aksSKU: aksSKU
+    aksPrivateDNSZone: privatednsAKSZone.id    
+    aksSKU: {
+      name: skuName
+      tier: skuTier
+    }
     aksIdentity: {
       '${aksIdentity.id}': {}
     }
-    applicationGatewayResourceId: appGateway.id
+    applicationGatewayResourceId: enableIngressApplicationGateway? appGateway.id : ''
     enableAzurePolicy: enableAzurePolicy
     enableOMSAgent: enableOMSAgent
     enableIngressApplicationGateway: enableIngressApplicationGateway
     enableWorkloadIdentity: enableWorkloadIdentity
+    agentPoolProfiles: [
+      {
+        name: 'defaultpool'
+        count: aksSystemPoolNodesCount
+        availabilityZones: !empty(availabilityZones) ? availabilityZones : null
+        enableAutoScaling: enableAutoScaling
+        minCount: enableAutoScaling ? aksSystemPoolNodeMin : null
+        maxCount: enableAutoScaling ? aksSystemPoolNodeMax : null
+        mode: 'System'
+        osDiskSizeGB: 30
+        vmSize: aksSystemPoolVMSize
+        type: 'VirtualMachineScaleSets'
+        vnetSubnetID: akssubnet.id
+        enableEncryptionAtHost: true
+      }
+      {
+        name: 'userpool'
+        count: aksUserPoolNodesCount
+        availabilityZones: !empty(availabilityZones) ? availabilityZones : null
+        enableAutoScaling: enableAutoScaling
+        minCount: enableAutoScaling ? aksUserPoolNodeMin : null
+        maxCount: enableAutoScaling ? aksUserPoolNodeMax : null
+        mode: 'User'
+        osDiskSizeGB: 60
+        vmSize: aksUserPoolVMSize
+        type: 'VirtualMachineScaleSets'
+        vnetSubnetID: akssubnet.id
+        enableEncryptionAtHost: true
+      }
+    ]
+    enableWebRoutingAddOn: aksEnableWebRoutingAddOn
+    webRoutingAddOnDnsZoneResourceIds: aksWebRoutingAddOnDnsZoneResourceIds
   }
-  dependsOn: [
-    rg
+  dependsOn: [    
     aksIdentity
     aksPodIdentityRole
-    aksPolicy
-    akslaworkspace
+    aksPolicy   
     akssubnet
     appGateway
   ]
 }
 
 
-module aksRouteTableRole 'modules/Identity/rtrole.bicep' = {
+module aksRouteTableRole '../modules/Identity/rtrole.bicep' = {
   scope: resourceGroup(vnetspokeRGName)
   name: 'aksRouteTableRole'
   params: {
@@ -157,12 +238,9 @@ module aksRouteTableRole 'modules/Identity/rtrole.bicep' = {
     roleGuid: '4d97b98b-1d4f-4787-a291-c67834d212e7' //Network Contributor
     rtName: rtaksName
   }
-  dependsOn: [
-    aksIdentity
-  ]
 }
 
-module acraksaccess 'modules/Identity/acrrole.bicep' = {
+module acraksaccess '../modules/Identity/acrrole.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'acraksaccess'
   params: {
@@ -170,12 +248,9 @@ module acraksaccess 'modules/Identity/acrrole.bicep' = {
     roleGuid: '7f951dda-4ed3-4680-a7ca-43fe172d538d' //AcrPull
     acrName: acrName
   }
-  dependsOn: [
-    aksIdentity
-  ]
 }
 
-module akspvtNetworkContributor 'modules/Identity/networkcontributorrole.bicep' = {
+module akspvtNetworkContributor '../modules/Identity/networkcontributorrole.bicep' = {
   scope: resourceGroup(vnetspokeRGName)
   name: 'akspvtNetworkContributor'
   params: {
@@ -183,13 +258,10 @@ module akspvtNetworkContributor 'modules/Identity/networkcontributorrole.bicep' 
     roleGuid: '4d97b98b-1d4f-4787-a291-c67834d212e7' //Network Contributor
     vnetName: aksvnetName
   }
-  dependsOn: [
-    aksIdentity
-  ]
 }
 
 
-module aksPvtDNSContributor 'modules/Identity/pvtdnscontribrole.bicep' = {
+module aksPvtDNSContributor '../modules/Identity/pvtdnscontribrole.bicep' = {
   scope: resourceGroup(privateDNSZoneAKSNameSubscriptionId, privateDNSZoneAKSNameResourceGroup)
   name: 'aksPvtDNSContributor'
   params: {
@@ -197,13 +269,12 @@ module aksPvtDNSContributor 'modules/Identity/pvtdnscontribrole.bicep' = {
     roleGuid: 'b12aa53e-6015-4669-85d0-8515ebb3ae7f' //Private DNS Zone Contributor
     pvtdnsAKSZoneName: privatednsAKSZone.name
   }
-  dependsOn: [
-    aksIdentity
+  dependsOn: [    
     privatednsAKSZone
   ]
 }
 
-module vmContributorRole 'modules/Identity/role.bicep' = {
+module vmContributorRole '../modules/Identity/role.bicep' = {
   scope: resourceGroup(aksInfrastractureRGName)
   name: 'vmContributor'
   params: {
@@ -215,55 +286,43 @@ module vmContributorRole 'modules/Identity/role.bicep' = {
   ]
 }
 
-module aksuseraccess 'modules/Identity/role.bicep' = {
+module aksuseraccess '../modules/Identity/role.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aksuseraccess'
   params: {
     principalId: aksusersgroupaccessprincipalId
     roleGuid: '4abbcc35-e782-43d8-92c5-2d3f1bd2253f' //Azure Kubernetes Service Cluster User Role
   }
-  dependsOn: [
-    rg
-  ]  
 }
 
-module aksadminaccess 'modules/Identity/role.bicep' = {
+module aksadminaccess '../modules/Identity/role.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aksadminaccess'
   params: {
     principalId: aksadminGroupaccessprincipalId
     roleGuid: '0ab0b1a8-8aac-4efd-b8c2-3ee1fb270be8' //Azure Kubernetes Service Cluster Admin Role
   }
-  dependsOn: [
-    rg
-  ]
 }
 
-module appGatewayContributorRole 'modules/Identity/role.bicep' = {
+module appGatewayContributorRole '../modules/Identity/role.bicep' = if (enableIngressApplicationGateway) {
   scope: resourceGroup(vnetspokeRGName)
   name: 'appGatewayContributor'
   params: {
     principalId: aks.outputs.ingressIdentity
     roleGuid: 'b24988ac-6180-42a0-ab88-20f7382dd24c' //Application Gateway Contributor
   }
-  dependsOn: [
-    aks
-  ]
 }
 
-module appGatewayReaderRole 'modules/Identity/role.bicep' = {
+module appGatewayReaderRole '../modules/Identity/role.bicep' = if (enableIngressApplicationGateway) {
   scope: resourceGroup(vnetspokeRGName)
   name: 'appGatewayReader'
   params: {
     principalId: aks.outputs.ingressIdentity
     roleGuid: 'acdd72a7-3385-48ef-bd42-f606fba81ae7' //Reader
   }
-  dependsOn: [
-    aks
-  ]
 }
 
-module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
+module keyvaultAccessPolicy '../modules/keyvault/keyvaultaccesspolicy.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'keyvaultAccessPolicy'
   params: {
@@ -271,17 +330,14 @@ module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
     vaultName: keyvaultName
     keyvaultManagedIdentityObjectId: aksusersgroupaccessprincipalId
   }
-  dependsOn: [
-    aks
-  ]
 }
 
-resource rtAppGW  'Microsoft.Network/routeTables@2023-11-01' existing = {
+resource rtAppGW  'Microsoft.Network/routeTables@2024-05-01' existing = {
   scope: resourceGroup(vnetspokeRGName)
   name: rtAppGWSubnetName
 }
 
-module appgwroutetableroutes 'modules/vnet/routetableroutes.bicep' = [for i in range(0, 3): if (networkPlugin == 'kebenet') {
+module appgwroutetableroutes '../modules/vnet/routetableroutes.bicep' = [for i in range(0, 3): if (aksNetworkPlugin == 'kebenet') {
   scope: resourceGroup(vnetspokeRGName)
   name: 'aks-vmss-appgw-pod-node-${i}'
   params: {
@@ -291,6 +347,17 @@ module appgwroutetableroutes 'modules/vnet/routetableroutes.bicep' = [for i in r
       addressPrefix: '${split(akskubenetpodcidr, ipdelimiters)[0]}.${split(akskubenetpodcidr, ipdelimiters)[1]}.${int(split(akskubenetpodcidr, ipdelimiters)[2]) + i}.${split(akskubenetpodcidr, ipdelimiters)[3]}/${split(akskubenetpodcidr, ipdelimiters)[4]}'
     }
     routeName: 'aks-vmss-appgw-pod-node-${i}'
-    routetableName: rtAppGW.name
+    routeTableName: rtAppGW.name
+  }
+}]
+
+
+module dnsZoneRoleAssignment '../modules/identity/webroutingdnsroleassignment.bicep' =  [for dnsZoneResourceId in (aksWebRoutingAddOnDnsZoneResourceIds ?? []): if(enableDnsZoneContributorRoleAssignment && aksEnableWebRoutingAddOn) {
+  scope: resourceGroup(dnsZoneResourceId)
+  name: 'dnsZoneRoleAssignment'
+  params: {
+    principalId: aks.outputs.webRoutingIdentity
+    roleGuid: 'b24988ac-6180-42a0-ab88-20f7382dd24c' //DNS Zone Contributor
+    dnsZoneResourceId: dnsZoneResourceId
   }
 }]
